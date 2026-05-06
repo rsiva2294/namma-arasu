@@ -236,20 +236,34 @@ export async function POST(request: Request) {
     };
     console.log("[TELEMETRY]", JSON.stringify(telemetryPayload));
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       query: cleanQuery,
       matches: topMatches,
       indexMetadata: vectorStore.metadata,
       telemetry: telemetryPayload,
     });
+    response.headers.set("Access-Control-Allow-Origin", "*");
+    response.headers.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+    response.headers.set("Access-Control-Allow-Headers", "Content-Type");
+    return response;
   } catch (error: any) {
     console.error("Semantic search exception:", error);
-    return NextResponse.json(
+    const response = NextResponse.json(
       {
         error: "Failed to perform semantic search",
         message: error.message || "Unknown error",
       },
       { status: 500 }
     );
+    response.headers.set("Access-Control-Allow-Origin", "*");
+    return response;
   }
+}
+
+export async function OPTIONS() {
+  const response = new Response(null, { status: 204 });
+  response.headers.set("Access-Control-Allow-Origin", "*");
+  response.headers.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+  response.headers.set("Access-Control-Allow-Headers", "Content-Type");
+  return response;
 }
