@@ -50,6 +50,14 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
   const [commentAuthor, setCommentAuthor] = useState<string>("");
   const [commentContent, setCommentContent] = useState<string>("");
 
+  // Status transition states
+  const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+  const [selectedTransitionStatus, setSelectedTransitionStatus] = useState<PromiseStatus | null>(null);
+  const [transitionSourceUrl, setTransitionSourceUrl] = useState<string>("");
+  const [transitionJustification, setTransitionJustification] = useState<string>("");
+  const [transitionBudgetAmount, setTransitionBudgetAmount] = useState<string>("");
+  const [transitionBottleneck, setTransitionBottleneck] = useState<string>("funding");
+
   const loadAllData = async () => {
     setLoading(true);
     const p = await promiseService.getPromiseById(id);
@@ -84,19 +92,88 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
     return () => window.removeEventListener("namma_arasu_role_change", handleRoleChange);
   }, [id]);
 
-  // Handle Admin updating progress directly
-  const handleProgressChange = async (val: number) => {
-    if (!promise) return;
-    const isCompleted = val === 100;
-    const nextStatus: PromiseStatus = isCompleted ? "Completed" : "In Progress";
+  // Submit the verified status transition
+  const handleTransitionSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!promise || !selectedTransitionStatus) return;
 
-    const updated = await promiseService.updatePromise(promise.id, {
-      progress_percentage: val,
-      status: nextStatus
-    });
+    // Validate general required fields
+    if (!transitionSourceUrl.trim() || !transitionJustification.trim()) {
+      alert("Please fill out all required fields: Credible Source URL and Justification.");
+      return;
+    }
+
+    // Validate source URL format
+    try {
+      new URL(transitionSourceUrl);
+    } catch (_) {
+      alert("Please enter a valid, absolute URL for the credible source.");
+      return;
+    }
+
+    const progressMap: Record<PromiseStatus, number> = {
+      "Announced": 10,
+      "Planned": 30,
+      "Budget Allocated": 50,
+      "In Progress": 75,
+      "Delayed": 40,
+      "Blocked": 20,
+      "Completed": 100
+    };
+
+    const updateFields: Partial<PromiseItem> = {
+      status: selectedTransitionStatus,
+      progress_percentage: progressMap[selectedTransitionStatus]
+    };
+
+    // If "Budget Allocated" is selected, extract and validate the budget amount
+    let budgetText = "";
+    if (selectedTransitionStatus === "Budget Allocated") {
+      const budgetNum = Number(transitionBudgetAmount);
+      if (isNaN(budgetNum) || budgetNum <= 0) {
+        alert("Please enter a valid, positive budget amount in Rupees.");
+        return;
+      }
+      updateFields.budget_amount = budgetNum;
+      budgetText = `Allocated Budget: ₹${(budgetNum / 10000000).toFixed(1)} Crores. `;
+    }
+
+    // Save state change in DB
+    const updated = await promiseService.updatePromise(promise.id, updateFields);
 
     if (updated) {
       setPromise(updated);
+
+      // Automatically post an official audited update log to the implementation timeline
+      let bottleneckText = "";
+      if (selectedTransitionStatus === "Delayed" || selectedTransitionStatus === "Blocked") {
+        const bottleneckLabels: Record<string, string> = {
+          funding: "Funding Constraints",
+          legal: "Legal Dispute",
+          administrative: "Administrative Approvals",
+          other: "Other Bottlenecks"
+        };
+        bottleneckText = `[Identified Bottleneck: ${bottleneckLabels[transitionBottleneck] || "General"}] `;
+      }
+
+      await promiseService.addUpdate({
+        promise_id: promise.id,
+        title: `Status Updated to ${selectedTransitionStatus}`,
+        description: `${transitionJustification}. ${budgetText}${bottleneckText}Verified Source: ${transitionSourceUrl}`,
+        created_by: "Official Administrator",
+      });
+
+      // Reload official timeline updates
+      const u = await promiseService.getUpdatesByPromiseId(promise.id);
+      setUpdates(u);
+
+      // Reset form states
+      setSelectedTransitionStatus(null);
+      setTransitionSourceUrl("");
+      setTransitionJustification("");
+      setTransitionBudgetAmount("");
+      setTransitionBottleneck("funding");
+      setIsDropdownOpen(false);
     }
   };
 
@@ -233,7 +310,37 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
               {promise.title}
             </h2>
             <p className="text-xs text-muted-foreground leading-relaxed max-w-4xl">
-              {promise.description}
+              {(() => {
+                const idMatch = promise.id.match(/^([a-z]+)-p(\d+)-s(\d+)-pr(\d+)$/);
+                if (idMatch) {
+                  const promiseNum = idMatch[4];
+                  return (
+                    <>
+                      {promise.title}. This represents a core policy commitment of the{" "}
+                      <span className="font-semibold text-foreground">Tamilaga Vettri Kazhagam (TVK)</span> manifesto, officially documented as{" "}
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                        Commitment #{promiseNum}
+                      </span>{" "}
+                      of this section, mapped under the{" "}
+                      <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                        promise.framework === "Aram" 
+                          ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
+                          : promise.framework === "Porul"
+                          ? "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20"
+                          : "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20"
+                      } border`}>
+                        {promise.framework} Framework
+                      </span>{" "}
+                      within the{" "}
+                      <span className="font-semibold text-foreground underline decoration-dotted decoration-muted-foreground">
+                        {promise.pillar}
+                      </span>{" "}
+                      pillar (Section: <span className="italic font-medium text-foreground">{promise.section}</span>).
+                    </>
+                  );
+                }
+                return promise.description;
+              })()}
             </p>
           </div>
 
@@ -245,19 +352,169 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
             </div>
             
             {role === "Admin" ? (
-              <div className="space-y-2">
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={promise.progress_percentage}
-                  onChange={(e) => handleProgressChange(Number(e.target.value))}
-                  className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-blue-500"
-                />
-                <p className="text-[10px] text-amber-500 font-semibold flex items-center gap-1 uppercase">
-                  <Activity className="w-3.5 h-3.5 animate-pulse" />
-                  <span>Admin Mode Active: Drag slider to dynamically update progress.</span>
-                </p>
+              <div className="space-y-4">
+                <div className="relative inline-block text-left">
+                  <button
+                    type="button"
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-foreground bg-background hover:bg-muted border border-border rounded-xl transition-all shadow-sm cursor-pointer"
+                  >
+                    <span>Change Governance Status</span>
+                    <span className="text-[10px] bg-blue-500/10 text-blue-500 border border-blue-500/20 px-2 py-0.5 rounded-lg font-bold uppercase tracking-wider">
+                      {promise.status}
+                    </span>
+                    <svg className={`w-4 h-4 text-muted-foreground transition-transform ${isDropdownOpen ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  {isDropdownOpen && (
+                    <div className="absolute left-0 mt-2 w-64 rounded-xl border border-border bg-card shadow-lg z-50 overflow-hidden divide-y divide-border">
+                      <div className="p-1.5 space-y-0.5">
+                        {(["Announced", "Planned", "Budget Allocated", "In Progress", "Delayed", "Blocked", "Completed"] as PromiseStatus[]).map((st) => {
+                          const isCurrent = promise.status === st;
+                          return (
+                            <button
+                              key={st}
+                              type="button"
+                              disabled={isCurrent}
+                              onClick={() => {
+                                setSelectedTransitionStatus(st);
+                                setIsDropdownOpen(false);
+                              }}
+                              className={`w-full text-left px-3 py-2 text-xs font-semibold rounded-lg flex items-center justify-between ${
+                                isCurrent
+                                  ? "bg-muted text-muted-foreground cursor-not-allowed"
+                                  : "text-foreground hover:bg-muted cursor-pointer transition-colors"
+                              }`}
+                            >
+                              <span>{st}</span>
+                              {isCurrent && (
+                                <span className="text-[9px] font-bold text-blue-500 uppercase">Current</span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Transition Verification Form */}
+                {selectedTransitionStatus && (
+                  <form onSubmit={handleTransitionSubmit} className="p-4 rounded-xl border border-amber-500/20 bg-amber-500/5 dark:bg-amber-500/5 space-y-4 animate-fade-in">
+                    <div className="flex items-center justify-between pb-2 border-b border-border">
+                      <p className="text-[11px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <Activity className="w-4 h-4 animate-pulse" />
+                        <span>Verify Status Transition: {promise.status} → {selectedTransitionStatus}</span>
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedTransitionStatus(null);
+                          setTransitionSourceUrl("");
+                          setTransitionJustification("");
+                          setTransitionBudgetAmount("");
+                          setTransitionBottleneck("funding");
+                        }}
+                        className="text-[10px] font-bold text-muted-foreground hover:text-foreground cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+
+                    <div className="space-y-3.5">
+                      {/* Credible Source Field */}
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
+                          Credible Verification Source URL * (e.g. Government Press Release or News Citation)
+                        </label>
+                        <input
+                          type="url"
+                          required
+                          value={transitionSourceUrl}
+                          onChange={(e) => setTransitionSourceUrl(e.target.value)}
+                          placeholder="https://tn.gov.in/pressrelease/..."
+                          className="w-full bg-background border border-border focus:border-amber-500 text-xs px-3 py-2 rounded-lg text-foreground outline-none transition-colors"
+                        />
+                      </div>
+
+                      {/* Status-specific Fields: Budget Allocated */}
+                      {selectedTransitionStatus === "Budget Allocated" && (
+                        <div className="space-y-1.5 animate-fade-in">
+                          <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
+                            Allocated Budget Amount in Rupees * (e.g., 450,000,000 for ₹45 Crores)
+                          </label>
+                          <input
+                            type="number"
+                            required
+                            min="1"
+                            value={transitionBudgetAmount}
+                            onChange={(e) => setTransitionBudgetAmount(e.target.value)}
+                            placeholder="Enter amount in Rupees..."
+                            className="w-full bg-background border border-border focus:border-amber-500 text-xs px-3 py-2 rounded-lg text-foreground outline-none transition-colors"
+                          />
+                        </div>
+                      )}
+
+                      {/* Status-specific Fields: Delayed or Blocked */}
+                      {(selectedTransitionStatus === "Delayed" || selectedTransitionStatus === "Blocked") && (
+                        <div className="space-y-1.5 animate-fade-in">
+                          <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
+                            Primary Bottleneck Category *
+                          </label>
+                          <select
+                            value={transitionBottleneck}
+                            onChange={(e) => setTransitionBottleneck(e.target.value)}
+                            className="w-full bg-background border border-border text-xs p-2 rounded-lg text-foreground cursor-pointer outline-none focus:border-amber-500"
+                          >
+                            <option value="funding">Funding Constraints & Treasury Clearance</option>
+                            <option value="legal">Legal Dispute or Court Stay Orders</option>
+                            <option value="administrative">Pending Inter-departmental approvals</option>
+                            <option value="other">Other Socio-economic Bottlenecks</option>
+                          </select>
+                        </div>
+                      )}
+
+                      {/* Transition Justification */}
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
+                          Official Progress Justification & Audited Notes *
+                        </label>
+                        <textarea
+                          required
+                          rows={3}
+                          value={transitionJustification}
+                          onChange={(e) => setTransitionJustification(e.target.value)}
+                          placeholder="State exactly what official updates, clearances, or budgets triggered this transition..."
+                          className="w-full bg-background border border-border focus:border-amber-500 text-xs p-3 rounded-lg text-foreground outline-none resize-none transition-colors"
+                        />
+                      </div>
+
+                      <div className="flex gap-2.5 pt-1">
+                        <button
+                          type="submit"
+                          className="px-4.5 py-2 text-xs font-bold text-white bg-amber-600 hover:bg-amber-500 rounded-lg transition-colors cursor-pointer"
+                        >
+                          Confirm & Post Verified Transition
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedTransitionStatus(null);
+                            setTransitionSourceUrl("");
+                            setTransitionJustification("");
+                            setTransitionBudgetAmount("");
+                            setTransitionBottleneck("funding");
+                          }}
+                          className="px-4 py-2 text-xs font-bold text-muted-foreground hover:bg-muted border border-border rounded-lg transition-colors cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                )}
               </div>
             ) : (
               <div className="w-full bg-muted rounded-full h-2.5 overflow-hidden">

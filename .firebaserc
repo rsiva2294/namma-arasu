@@ -12,6 +12,17 @@
           "namma-arasu-staging"
         ]
       }
+    },
+    "production": {
+      "hosting": {
+        "production": [
+          "namma-arasu"
+        ],
+        "staging": [
+          "namma-arasu-staging"
+        ]
+      }
     }
-  }
+  },
+  "etags": {}
 }
