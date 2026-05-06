@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { User, ShieldAlert, Calendar, Sun, Moon } from "lucide-react";
+import { User, ShieldAlert, Calendar, Sun, Moon, Menu } from "lucide-react";
 
 export const Header: React.FC = () => {
   const [role, setRole] = useState<"Citizen" | "Admin">("Citizen");
@@ -61,6 +61,15 @@ export const Header: React.FC = () => {
     <header className="sticky top-0 z-40 w-full border-b border-border bg-background/85 backdrop-blur-md px-6 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
       {/* Brand Logo & Name */}
       <div className="flex items-center gap-3">
+        {/* Mobile Hamburger Toggle */}
+        <button
+          onClick={() => window.dispatchEvent(new Event("namma_arasu_toggle_sidebar"))}
+          className="md:hidden p-2 -ml-2 rounded-xl border border-border bg-muted/30 hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all shrink-0 cursor-pointer"
+          title="Toggle Navigation Menu"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-700 font-extrabold text-white text-lg tracking-wider active-glow">
           NA
         </div>

@@ -42,6 +42,18 @@ interface RawFrameworkData {
   pillars?: RawPillar[];
 }
 
+// Helper to extract specific districts if explicitly mentioned in the text
+const extractMentionedDistricts = (text: string): string[] => {
+  const mentioned: string[] = [];
+  TAMIL_NADU_DISTRICTS.forEach((district) => {
+    const regex = new RegExp(`\\b${district}\\b`, "i");
+    if (regex.test(text)) {
+      mentioned.push(district);
+    }
+  });
+  return mentioned.length > 0 ? mentioned : ["All Districts"];
+};
+
 // Parser engine mapping raw manifesto JSON structures into unified PromiseItem schema
 const parseFrameworkData = (rawData: RawFrameworkData, frameworkName: "Aram" | "Porul" | "Inbam"): PromiseItem[] => {
   const list: PromiseItem[] = [];
@@ -78,15 +90,15 @@ const parseFrameworkData = (rawData: RawFrameworkData, frameworkName: "Aram" | "
               section: sectionName,
               category: [frameworkName, pillarTitle.split(" ")[0]],
               tags: [frameworkName, "Manifesto"],
-              status: "Planned",
+              status: "Announced",
               priority: "Medium",
-              progress_percentage: 0,
+              progress_percentage: 10,
               measurable: true,
               target_date: "2027-12-31",
               budget_amount: 0,
               manifesto_quoted_figure: quotedFigure,
               departments: [],
-              districts: ["All Districts"],
+              districts: extractMentionedDistricts(promiseText),
               created_at: "2026-05-01T10:00:00Z",
               updated_at: "2026-05-01T10:00:00Z"
             });

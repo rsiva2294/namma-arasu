@@ -20,38 +20,38 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, className = ""
     switch (status) {
       case "Announced":
         return {
-          bg: "bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30",
+          bg: "bg-blue-500/15 text-blue-800 dark:text-blue-400 border-blue-500/30",
           icon: Megaphone,
         };
       case "Planned":
         return {
-          bg: "bg-purple-500/15 text-purple-700 dark:text-purple-400 border-purple-500/30",
+          bg: "bg-purple-500/15 text-purple-800 dark:text-purple-400 border-purple-500/30",
           icon: Calendar,
         };
       case "Budget Allocated":
         return {
-          bg: "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30",
+          bg: "bg-amber-500/15 text-amber-800 dark:text-amber-400 border-amber-500/30",
           icon: Coins,
         };
       case "In Progress":
         return {
-          bg: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30",
+          bg: "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400 border-emerald-500/30",
           icon: Play,
           pulse: true,
         };
       case "Delayed":
         return {
-          bg: "bg-orange-500/15 text-orange-700 dark:text-orange-400 border-orange-500/30",
+          bg: "bg-orange-500/15 text-orange-800 dark:text-orange-400 border-orange-500/30",
           icon: AlertTriangle,
         };
       case "Blocked":
         return {
-          bg: "bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/30",
+          bg: "bg-red-500/15 text-red-800 dark:text-red-400 border-red-500/30",
           icon: Octagon,
         };
       case "Completed":
         return {
-          bg: "bg-teal-500/15 text-teal-700 dark:text-teal-400 border-teal-500/30 shadow-sm",
+          bg: "bg-teal-500/15 text-teal-800 dark:text-teal-400 border-teal-500/30 shadow-sm",
           icon: CheckCircle2,
         };
     }

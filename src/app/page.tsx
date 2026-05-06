@@ -43,6 +43,11 @@ export default function Dashboard() {
   const [selectedFramework, setSelectedFramework] = useState<FrameworkType | "All">("All");
   const [selectedStatus, setSelectedStatus] = useState<PromiseStatus | "All">("All");
   const [selectedPriority, setSelectedPriority] = useState<PromisePriority | "All">("All");
+  const [selectedSection, setSelectedSection] = useState<string>("All");
+
+  // Mobile drawer collapsing states
+  const [showAnalytics, setShowAnalytics] = useState<boolean>(false);
+  const [showFilters, setShowFilters] = useState<boolean>(false);
 
   useEffect(() => {
     async function loadData() {
@@ -68,6 +73,11 @@ export default function Dashboard() {
   const totalBudget = promises.reduce((sum, p) => sum + (p.budget_amount || 0), 0);
   const budgetInCrores = (totalBudget / 10000000).toFixed(1);
 
+  // Dynamic unique sections list
+  const uniqueSections = Array.from(
+    new Set(promises.map((p) => p.section).filter(Boolean))
+  ).sort() as string[];
+
   // Filtered data
   const filteredPromises = promises.filter((p) => {
     const matchesSearch = 
@@ -78,8 +88,9 @@ export default function Dashboard() {
     const matchesFramework = selectedFramework === "All" || p.framework === selectedFramework;
     const matchesStatus = selectedStatus === "All" || p.status === selectedStatus;
     const matchesPriority = selectedPriority === "All" || p.priority === selectedPriority;
+    const matchesSection = selectedSection === "All" || p.section === selectedSection;
 
-    return matchesSearch && matchesFramework && matchesStatus && matchesPriority;
+    return matchesSearch && matchesFramework && matchesStatus && matchesPriority && matchesSection;
   });
 
   // Chart 1: Framework analysis (Total vs Completed)
@@ -115,6 +126,7 @@ export default function Dashboard() {
     setSelectedFramework("All");
     setSelectedStatus("All");
     setSelectedPriority("All");
+    setSelectedSection("All");
   };
 
   if (loading) {
@@ -128,24 +140,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8 animate-fade-in">
-      {/* Welcome Panel */}
-      <div className="p-6 rounded-2xl border border-border bg-gradient-to-r from-card to-muted/20 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div className="space-y-1">
-          <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-            Governance Command Center <Sparkles className="w-4 h-4 text-amber-500" />
-          </h2>
-          <p className="text-xs text-muted-foreground font-medium leading-relaxed">
-            Transparently auditing the TVK Manifesto commitments. Review live progress trackers, regional implementations, and citizen evidence logs.
-          </p>
-        </div>
-        <Link 
-          href="/kanban" 
-          className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 rounded-xl transition-all shadow-[0_0_15px_rgba(37,99,235,0.2)] active-glow self-start md:self-auto"
-        >
-          <span>Open Kanban Board</span>
-          <ChevronRight className="w-3.5 h-3.5" />
-        </Link>
-      </div>
+
 
       {/* Featured Showcase Hero Card — Always visible at the top */}
       <Link
@@ -156,10 +151,10 @@ export default function Dashboard() {
           {/* Left: Icon + Text */}
           <div className="flex-1 space-y-3">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-md border bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 uppercase tracking-wider">
+              <span className="inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-md border bg-amber-500/10 text-amber-800 dark:text-amber-400 border-amber-500/20 uppercase tracking-wider">
                 <Award className="w-3 h-3" /> Showcase Example
               </span>
-              <span className="inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-md border bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20 uppercase tracking-wider">
+              <span className="inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-md border bg-teal-500/10 text-teal-800 dark:text-teal-400 border-teal-500/20 uppercase tracking-wider">
                 Completed · 100%
               </span>
             </div>
@@ -268,8 +263,22 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Collapsible Analytics Toggle on Mobile */}
+      <button 
+        onClick={() => setShowAnalytics(!showAnalytics)} 
+        className="w-full md:hidden flex items-center justify-between p-4 rounded-xl border border-border bg-card hover:bg-muted/10 font-bold text-xs text-foreground uppercase tracking-wider transition-all cursor-pointer"
+      >
+        <span className="flex items-center gap-2">
+          <TrendingUp className="w-4 h-4 text-blue-500" />
+          {showAnalytics ? "Hide Analytics & Charts" : "Show Analytics & Charts"}
+        </span>
+        <span className="text-[9px] text-muted-foreground font-semibold px-2 py-0.5 bg-muted rounded">
+          {showAnalytics ? "COLLAPSE" : "EXPAND"}
+        </span>
+      </button>
+
       {/* Visualizations Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className={`${showAnalytics ? "grid" : "hidden md:grid"} grid-cols-1 lg:grid-cols-12 gap-6`}>
         {/* Chart 1: Frameworks bar */}
         <div className="p-5 rounded-2xl border border-border bg-card lg:col-span-7 flex flex-col gap-4 shadow-sm">
           <div className="flex items-center gap-2 pb-2 border-b border-border">
@@ -327,11 +336,23 @@ export default function Dashboard() {
       {/* Advanced Filters section */}
       <div className="p-5 rounded-2xl border border-border bg-card space-y-4 shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-3 border-b border-border">
-          <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-blue-500" />
-            <h3 className="text-sm font-bold text-foreground uppercase tracking-wide">Faceted Manifesto Filters</h3>
-          </div>
-          {(searchQuery || selectedFramework !== "All" || selectedStatus !== "All" || selectedPriority !== "All") && (
+          <button
+            onClick={() => {
+              if (window.innerWidth < 768) {
+                setShowFilters(!showFilters);
+              }
+            }}
+            className="w-full md:w-auto text-left flex items-center justify-between md:justify-start gap-2 cursor-pointer outline-none select-none"
+          >
+            <div className="flex items-center gap-2">
+              <Filter className="w-4 h-4 text-blue-500" />
+              <h3 className="text-sm font-bold text-foreground uppercase tracking-wide">Faceted Manifesto Filters</h3>
+            </div>
+            <span className="md:hidden text-[9px] text-muted-foreground font-bold px-2 py-0.5 bg-muted rounded">
+              {showFilters ? "COLLAPSE" : "EXPAND"}
+            </span>
+          </button>
+          {(searchQuery || selectedFramework !== "All" || selectedStatus !== "All" || selectedPriority !== "All" || selectedSection !== "All") && (
             <button
               onClick={clearFilters}
               className="text-xs font-semibold text-blue-500 hover:text-blue-400 transition-colors self-start md:self-auto cursor-pointer"
@@ -341,7 +362,7 @@ export default function Dashboard() {
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className={`${showFilters ? "grid" : "hidden md:grid"} grid-cols-1 md:grid-cols-5 gap-4`}>
           {/* Search Box */}
           <div className="relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -364,6 +385,20 @@ export default function Dashboard() {
             <option value="Aram">Aram (Ethics)</option>
             <option value="Porul">Porul (Wealth)</option>
             <option value="Inbam">Inbam (Happiness)</option>
+          </select>
+
+          {/* Section Selector */}
+          <select
+            value={selectedSection}
+            onChange={(e) => setSelectedSection(e.target.value)}
+            className="w-full bg-background border border-border focus:border-primary text-xs px-3.5 py-2.5 rounded-xl text-foreground outline-none focus:ring-1 focus:ring-blue-500/50 transition-all cursor-pointer"
+          >
+            <option value="All">All Sections</option>
+            {uniqueSections.map((sec) => (
+              <option key={sec} value={sec}>
+                {sec}
+              </option>
+            ))}
           </select>
 
           {/* Status Selector */}
@@ -425,21 +460,35 @@ export default function Dashboard() {
                   <div className="space-y-3.5">
                     {/* Badges row */}
                     <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <span className={`text-[9px] font-bold px-2 py-0.5 rounded-md border uppercase tracking-wider ${
-                        promise.framework === "Aram" 
-                          ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
-                          : promise.framework === "Porul"
-                          ? "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20"
-                          : "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20"
-                      }`}>
-                        {promise.framework} Framework
-                      </span>
-
-                      {promise.id === "p0-tvk-journey" && (
-                        <span className="text-[9px] font-bold px-2 py-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 rounded-md uppercase tracking-wider animate-pulse">
-                          ⚠️ Example Card
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded-md border uppercase tracking-wider ${
+                          promise.framework === "Aram" 
+                            ? "bg-blue-500/10 text-blue-800 dark:text-blue-400 border-blue-500/20"
+                            : promise.framework === "Porul"
+                            ? "bg-cyan-500/10 text-cyan-800 dark:text-cyan-400 border-cyan-500/20"
+                            : "bg-purple-500/10 text-purple-800 dark:text-purple-400 border-purple-500/20"
+                        }`}>
+                          {promise.framework} Framework
                         </span>
-                      )}
+
+                        {(() => {
+                          const idMatch = promise.id.match(/^([a-z]+)-p(\d+)-s(\d+)-pr(\d+)$/);
+                          if (idMatch) {
+                            return (
+                              <span className="text-[9px] font-bold px-2 py-0.5 bg-muted text-muted-foreground border border-border rounded-md uppercase tracking-wider">
+                                Commitment #{idMatch[4]} • {promise.pillar}
+                              </span>
+                            );
+                          }
+                          return null;
+                        })()}
+
+                        {promise.id === "p0-tvk-journey" && (
+                          <span className="text-[9px] font-bold px-2 py-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 rounded-md uppercase tracking-wider animate-pulse">
+                            ⚠️ Example Card
+                          </span>
+                        )}
+                      </div>
 
                       <div className="flex items-center gap-2">
                         <PriorityBadge priority={promise.priority} />
@@ -447,14 +496,11 @@ export default function Dashboard() {
                       </div>
                     </div>
 
-                    {/* Title & Desc */}
+                    {/* Title */}
                     <div className="space-y-1.5">
-                      <h4 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">
+                      <h4 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors line-clamp-3 leading-relaxed">
                         {promise.title}
                       </h4>
-                      <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                        {promise.description}
-                      </p>
                     </div>
                   </div>
 

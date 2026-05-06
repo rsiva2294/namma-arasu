@@ -274,11 +274,11 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
 
       {/* Example Showcase Warning Banner */}
       {promise.id === "p0-tvk-journey" && (
-        <div className="p-4 rounded-2xl border border-amber-500/20 bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-start gap-3 shadow-[0_0_15px_rgba(245,158,11,0.05)]">
+        <div className="p-4 rounded-2xl border border-amber-500/20 bg-amber-500/10 text-amber-800 dark:text-amber-400 flex items-start gap-3 shadow-[0_0_15px_rgba(245,158,11,0.05)]">
           <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
           <div className="space-y-1">
             <p className="text-xs font-bold uppercase tracking-wider">Example Showcase Card</p>
-            <p className="text-[11px] leading-relaxed text-amber-700/80 dark:text-amber-400/80 font-medium">
+            <p className="text-[11px] leading-relaxed text-amber-800/80 dark:text-amber-400/80 font-medium">
               This card is a pre-seeded demonstration example showing NammaArasu's interactive progress timeline, official gazette log entries, citizen-uploaded proof verification, and public discussion feeds.
             </p>
           </div>
@@ -291,10 +291,10 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <span className={`text-[9px] font-bold px-2 py-0.5 rounded-md border uppercase tracking-wider ${
               promise.framework === "Aram" 
-                ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
+                ? "bg-blue-500/10 text-blue-800 dark:text-blue-400 border-blue-500/20"
                 : promise.framework === "Porul"
-                ? "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20"
-                : "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20"
+                ? "bg-cyan-500/10 text-cyan-800 dark:text-cyan-400 border-cyan-500/20"
+                : "bg-purple-500/10 text-purple-800 dark:text-purple-400 border-purple-500/20"
             }`}>
               {promise.framework} Framework • {promise.pillar}
             </span>
@@ -316,26 +316,7 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
                   const promiseNum = idMatch[4];
                   return (
                     <>
-                      {promise.title}. This represents a core policy commitment of the{" "}
-                      <span className="font-semibold text-foreground">Tamilaga Vettri Kazhagam (TVK)</span> manifesto, officially documented as{" "}
-                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                        Commitment #{promiseNum}
-                      </span>{" "}
-                      of this section, mapped under the{" "}
-                      <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                        promise.framework === "Aram" 
-                          ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
-                          : promise.framework === "Porul"
-                          ? "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20"
-                          : "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20"
-                      } border`}>
-                        {promise.framework} Framework
-                      </span>{" "}
-                      within the{" "}
-                      <span className="font-semibold text-foreground underline decoration-dotted decoration-muted-foreground">
-                        {promise.pillar}
-                      </span>{" "}
-                      pillar (Section: <span className="italic font-medium text-foreground">{promise.section}</span>).
+                      Commitment #{promiseNum} • {promise.pillar} • {promise.framework} Framework
                     </>
                   );
                 }

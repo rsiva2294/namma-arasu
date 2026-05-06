@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-05-06
+
+### Added
+- Premium **Regional Development & Manifesto Atlas** with targeted localized schemes, statewide policies, dynamic metric banners, and active verifiable audit filters.
+- Interactive **Hamburger Mobile Drawer** for mobile responsive sidebar navigation, removing it from list-scrolling flow.
+- Collapsible **Analytics & Charts** and **Faceted Filters** on mobile, saving over 1000px of scrolling space.
+- High-contrast **Commitment #X • {Pillar}** badges directly inside the badges row of each dashboard card.
+
+### Changed
+- Re-seeded all parsed manifesto promises to `"Announced"` status (with 10% progress).
+- Implemented automatic word-boundary **District Extraction** to restrict regional commitments to explicitly mentioned locations, defaulting to Statewide (`"All Districts"`) for everything else.
+- Boosted light mode foreground contrast levels for all badges (Status, Priority, Framework) and warning headers from `600`/`700` to high-contrast **`800` strength** classes.
+- Compacted the verbose description paragraph on the promise detail page to a clean single line showing only commitment number, pillar, and framework.
+- Removed redundant description paragraphs from dashboard cards, expanding title blocks to a clean `line-clamp-3` format.
+
+### Removed
+- Legacy "Governance Command Center" welcome panel entirely from the homepage.
+
 ## [0.3.0] - 2026-05-06
 
 ### Added
