@@ -58,28 +58,32 @@ NammaArasu supports **Zero-Config Local Fallback Mode**. If no environment varia
 
 ### Environment Templates
 
-For live cloud-synced instances, NammaArasu maintains isolated databases and storage buckets for staging and production:
-- **Staging Instance**: Persists to `namma-arasu-staging`. Guided by [.env.staging.example](file:///c:/projects/tvk-tracker-v2/.env.staging.example).
-- **Production Instance**: Persists to `namma-arasu`. Guided by [.env.production.example](file:///c:/projects/tvk-tracker-v2/.env.production.example).
+For maximum security and data integrity, NammaArasu isolates development and staging databases from your live production database:
+- **Staging Instance (Browser Sandbox)**: Runs entirely inside the browser's `localStorage` (forced local mode). Guided by [.env.staging.example](file:///c:/projects/tvk-tracker-v2/.env.staging.example). Zero risk of production data corruption!
+- **Production Instance (Cloud Sync)**: Syncs with live Firebase Cloud Firestore databases. Guided by [.env.production.example](file:///c:/projects/tvk-tracker-v2/.env.production.example).
 
-To develop with a specific cloud instance, copy the respective template to your local untracked `.env.local` file:
+To develop with a specific target, copy the respective template to your local untracked `.env.local` file:
 ```bash
-# To target Staging database:
+# To target Staging (Forced Local Sandbox):
 cp .env.staging.example .env.local
 
-# To target Production database:
+# To target Production (Cloud Firestore):
 cp .env.production.example .env.local
 ```
 
-### Multi-Environment Firebase Deployment
+### Multi-Site Firebase Hosting
 
-We maintain 100% data and hosting isolation. Switch active projects and deploy automatically to Firebase Hosting using the CLI scripts:
+Both sites are hosted under a single Firebase project `namma-arasu` using different hosting targets:
+1. **Production Site**: `namma-arasu.web.app` (configured as target `production`).
+2. **Staging Site**: `namma-arasu-staging.web.app` (configured as target `staging`).
+
+To deploy automatically to the specific hosting target, run:
 
 ```bash
-# Deploy to Staging environment:
+# Deploy to Staging Site (runs in local sandbox):
 npm run deploy:staging
 
-# Deploy to Production environment:
+# Deploy to Production Site (runs in cloud Firestore):
 npm run deploy:production
 ```
 

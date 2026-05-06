@@ -23,11 +23,14 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "",
 };
 
-export const isFirebaseConfigured = !!(
-  firebaseConfig.apiKey && 
-  firebaseConfig.projectId && 
-  firebaseConfig.appId
-);
+export const isFirebaseConfigured = 
+  process.env.NEXT_PUBLIC_FORCE_LOCAL === "true"
+    ? false
+    : !!(
+        firebaseConfig.apiKey && 
+        firebaseConfig.projectId && 
+        firebaseConfig.appId
+      );
 
 // Alias for Sidebar compatibility to avoid breaking UI changes
 export const isSupabaseConfigured = isFirebaseConfigured;

@@ -1,6 +1,17 @@
 {
   "projects": {
-    "production": "namma-arasu",
-    "staging": "namma-arasu-staging"
+    "default": "namma-arasu"
+  },
+  "targets": {
+    "namma-arasu": {
+      "hosting": {
+        "production": [
+          "namma-arasu"
+        ],
+        "staging": [
+          "namma-arasu-staging"
+        ]
+      }
+    }
   }
 }

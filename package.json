@@ -11,8 +11,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "prepare": "husky",
-    "deploy:staging": "firebase use staging && npm run build && firebase deploy",
-    "deploy:production": "firebase use production && npm run build && firebase deploy"
+    "deploy:staging": "npm run build && firebase deploy --only hosting:staging",
+    "deploy:production": "npm run build && firebase deploy --only hosting:production"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.105.3",
