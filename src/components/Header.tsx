@@ -2,20 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import { User, ShieldAlert, Calendar, Sun, Moon } from "lucide-react";
-import { auth } from "@/lib/db";
-import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
 
 export const Header: React.FC = () => {
   const [role, setRole] = useState<"Citizen" | "Admin">("Citizen");
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [currentDate, setCurrentDate] = useState<string>("");
-
-  // Authentication states
-  const [showLoginModal, setShowLoginModal] = useState<boolean>(false);
-  const [loginEmail, setLoginEmail] = useState<string>("");
-  const [loginPassword, setLoginPassword] = useState<string>("");
-  const [loginError, setLoginError] = useState<string>("");
-  const [authLoading, setAuthLoading] = useState<boolean>(false);
 
   useEffect(() => {
     // Set formatted date
@@ -27,24 +18,12 @@ export const Header: React.FC = () => {
     };
     setCurrentDate(new Date().toLocaleDateString("en-US", options));
 
-    // Listen for Auth changes
-    if (auth) {
-      const unsubscribe = onAuthStateChanged(auth, (user) => {
-        if (user) {
-          setRole("Admin");
-          localStorage.setItem("namma_arasu_role", "Admin");
-          window.dispatchEvent(new Event("namma_arasu_role_change"));
-        } else {
-          setRole("Citizen");
-          localStorage.setItem("namma_arasu_role", "Citizen");
-          window.dispatchEvent(new Event("namma_arasu_role_change"));
-        }
-      });
-      return () => unsubscribe();
+    // Get active role from local storage
+    const savedRole = localStorage.getItem("namma_arasu_role");
+    if (savedRole === "Admin") {
+      setRole("Admin");
     } else {
-      // Fallback for isolated Local/Staging
-      const savedRole = localStorage.getItem("namma_arasu_role") as "Citizen" | "Admin";
-      setRole(savedRole === "Admin" ? "Admin" : "Citizen");
+      localStorage.setItem("namma_arasu_role", "Citizen");
     }
 
     // Get active theme from local storage
@@ -58,54 +37,12 @@ export const Header: React.FC = () => {
     }
   }, []);
 
-  const handleRoleToggle = async () => {
-    if (role === "Admin") {
-      try {
-        if (auth) {
-          await signOut(auth);
-        } else {
-          setRole("Citizen");
-          localStorage.setItem("namma_arasu_role", "Citizen");
-          window.dispatchEvent(new Event("namma_arasu_role_change"));
-        }
-      } catch (err: any) {
-        console.error("Logout error:", err);
-      }
-    } else {
-      setShowLoginModal(true);
-    }
-  };
-
-  const handleLoginSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoginError("");
-    setAuthLoading(true);
-
-    try {
-      if (auth) {
-        await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
-        setShowLoginModal(false);
-        setLoginEmail("");
-        setLoginPassword("");
-      } else {
-        // Sandbox mock login fallback
-        if (loginEmail === "admin@nammaarasu.gov" && loginPassword === "ArivanArasu2026!") {
-          setRole("Admin");
-          localStorage.setItem("namma_arasu_role", "Admin");
-          window.dispatchEvent(new Event("namma_arasu_role_change"));
-          setShowLoginModal(false);
-          setLoginEmail("");
-          setLoginPassword("");
-        } else {
-          setLoginError("Invalid administrator credentials. Please check your spelling and try again.");
-        }
-      }
-    } catch (error: any) {
-      console.error("Auth error:", error);
-      setLoginError(error.message || "Authentication failed. Please check your credentials.");
-    } finally {
-      setAuthLoading(false);
-    }
+  const handleRoleToggle = () => {
+    const nextRole = role === "Citizen" ? "Admin" : "Citizen";
+    setRole(nextRole);
+    localStorage.setItem("namma_arasu_role", nextRole);
+    // Dispatch custom event to notify other components of the role change
+    window.dispatchEvent(new Event("namma_arasu_role_change"));
   };
 
   const handleThemeToggle = () => {
@@ -188,91 +125,7 @@ export const Header: React.FC = () => {
           )}
         </button>
       </div>
-
-      {/* Admin Authentication Modal */}
-      {showLoginModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm animate-fade-in animate-duration-150">
-          <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 space-y-4 shadow-2xl relative">
-            <div className="flex items-center gap-2 text-blue-500 pb-2 border-b border-border">
-              <ShieldAlert className="w-5 h-5 animate-pulse text-amber-500" />
-              <h3 className="text-sm font-bold uppercase tracking-wider text-foreground">Admin Verification</h3>
-            </div>
-
-            <p className="text-xs text-muted-foreground leading-relaxed font-medium">
-              Access to administrative controls is restricted to verified administrators. Please sign in to authenticate your session.
-            </p>
-
-            {loginError && (
-              <div className="p-3 text-[11px] font-bold text-rose-500 bg-rose-500/10 border border-rose-500/20 rounded-xl leading-normal">
-                {loginError}
-              </div>
-            )}
-
-            <form onSubmit={handleLoginSubmit} className="space-y-3.5">
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
-                  Official Email Address
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={loginEmail}
-                  onChange={(e) => setLoginEmail(e.target.value)}
-                  placeholder="admin@nammaarasu.gov"
-                  className="w-full bg-background border border-border focus:border-blue-500 text-xs px-3 py-2 rounded-lg text-foreground outline-none transition-colors"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
-                  Account Password
-                </label>
-                <input
-                  type="password"
-                  required
-                  value={loginPassword}
-                  onChange={(e) => setLoginPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full bg-background border border-border focus:border-blue-500 text-xs px-3 py-2 rounded-lg text-foreground outline-none transition-colors"
-                />
-              </div>
-
-              {/* Sandbox Credentials Helper */}
-              <div className="p-3 bg-blue-500/5 border border-blue-500/10 rounded-xl space-y-1">
-                <p className="text-[9px] font-bold text-blue-500 uppercase tracking-wide">Sandbox Credentials Active</p>
-                <p className="text-[9px] text-muted-foreground leading-relaxed">
-                  Use sandbox credentials for verification: <br />
-                  <span className="font-mono text-foreground font-semibold">admin@nammaarasu.gov</span> / <span className="font-mono text-foreground font-semibold">ArivanArasu2026!</span>
-                </p>
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-1">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowLoginModal(false);
-                    setLoginEmail("");
-                    setLoginPassword("");
-                    setLoginError("");
-                  }}
-                  className="px-3.5 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={authLoading}
-                  className="px-4.5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-all cursor-pointer"
-                >
-                  {authLoading ? "Verifying..." : "Sign In"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </header>
   );
 };
-
 export default Header;

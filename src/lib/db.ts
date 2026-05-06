@@ -39,10 +39,7 @@ const app = isFirebaseConfigured
   ? (getApps().length === 0 ? initializeApp(firebaseConfig) : getApp())
   : null;
 
-import { getAuth } from "firebase/auth";
-
 export const db = app ? getFirestore(app) : null;
-export const auth = app ? getAuth(app) : null;
 
 // ==========================================================
 // LOCAL STORAGE FALLBACK ENGINE
