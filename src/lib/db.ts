@@ -108,6 +108,23 @@ export const promiseService = {
         }
 
         const list = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as PromiseItem[];
+        
+        // Automated Self-Healing Sync: Prune any Firestore documents not present in our local seed config
+        const validIds = INITIAL_MOCK_PROMISES.map((p) => p.id);
+        const orphanedDocs = snapshot.docs.filter((d) => !validIds.includes(d.id));
+        
+        if (orphanedDocs.length > 0) {
+          console.log(`Self-healing sync active: Pruning ${orphanedDocs.length} orphaned cloud documents...`);
+          const { deleteDoc } = await import("firebase/firestore");
+          for (const d of orphanedDocs) {
+            await deleteDoc(doc(db, "promises", d.id));
+          }
+          // Reload clean snapshot
+          const updatedSnapshot = await getDocs(promisesCol);
+          const updatedList = updatedSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as PromiseItem[];
+          return updatedList.sort((a, b) => new Date(b.created_at || "").getTime() - new Date(a.created_at || "").getTime());
+        }
+
         // Sort client side to bypass immediate complex composite index requirement on firestore
         return list.sort((a, b) => new Date(b.created_at || "").getTime() - new Date(a.created_at || "").getTime());
       } catch (error) {
