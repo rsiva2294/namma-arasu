@@ -49,14 +49,22 @@ const LOCAL_KEYS = {
   COMMENTS: "namma_arasu_comments",
 };
 
+const CACHE_VERSION = "v3_budget_cleared";
+
 // Safely initialize local storage with mock data
 const initLocalStorage = () => {
   if (typeof window === "undefined") return;
 
+  const currentVersion = localStorage.getItem("namma_arasu_cache_version");
   const localPromises = localStorage.getItem(LOCAL_KEYS.PROMISES);
-  const shouldReset = !localPromises || JSON.parse(localPromises).length !== INITIAL_MOCK_PROMISES.length;
+  
+  const shouldReset = 
+    currentVersion !== CACHE_VERSION || 
+    !localPromises || 
+    JSON.parse(localPromises).length !== INITIAL_MOCK_PROMISES.length;
 
   if (shouldReset) {
+    localStorage.setItem("namma_arasu_cache_version", CACHE_VERSION);
     localStorage.setItem(LOCAL_KEYS.PROMISES, JSON.stringify(INITIAL_MOCK_PROMISES));
     localStorage.setItem(LOCAL_KEYS.UPDATES, JSON.stringify(INITIAL_MOCK_UPDATES));
     localStorage.setItem(LOCAL_KEYS.EVIDENCE, JSON.stringify(INITIAL_MOCK_EVIDENCE));

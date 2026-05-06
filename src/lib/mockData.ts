@@ -45,9 +45,6 @@ const parseFrameworkData = (rawData: any, frameworkName: "Aram" | "Porul" | "Inb
             
             const description = `${title}. This represents a core policy commitment of the Tamilaga Vettri Kazhagam (TVK) manifesto mapped under the ${pillarTitle} pillar (Section: ${sectionName}).`;
 
-            // Give some cards budgets to keep metrics looking rich and institutional
-            const budgetAmt = prIdx % 4 === 0 ? (prIdx + 1) * 450000000 : 0; 
-
             list.push({
               id,
               title,
@@ -58,11 +55,11 @@ const parseFrameworkData = (rawData: any, frameworkName: "Aram" | "Porul" | "Inb
               category: [frameworkName, pillarTitle.split(" ")[0]],
               tags: [frameworkName, "Manifesto"],
               status: "Planned",
-              priority: prIdx % 3 === 0 ? "High" : prIdx % 3 === 1 ? "Medium" : "Low",
+              priority: "Medium",
               progress_percentage: 0,
               measurable: true,
               target_date: "2027-12-31",
-              budget_amount: budgetAmt,
+              budget_amount: 0,
               departments: [],
               districts: ["All Districts"],
               created_at: "2026-05-01T10:00:00Z",

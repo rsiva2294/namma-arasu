@@ -182,7 +182,7 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
 
   const budgetCrores = promise.budget_amount 
     ? `₹${(promise.budget_amount / 10000000).toFixed(1)} Crores` 
-    : "No Direct Allocation";
+    : "Awaiting Budget Allocation";
 
   return (
     <div className="space-y-8 animate-fade-in pb-12">

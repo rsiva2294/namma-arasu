@@ -210,12 +210,12 @@ export default function Dashboard() {
         {/* Metric 5 */}
         <div className="p-4 rounded-2xl bg-card border border-border flex flex-col justify-between h-28 col-span-2 lg:col-span-1 shadow-sm">
           <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-[10px] font-bold uppercase tracking-wider">Allocated Budget</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider">State Budget Allocated</span>
             <Coins className="w-4 h-4 text-amber-500" />
           </div>
           <div>
             <p className="text-2xl font-black text-amber-500">₹{budgetInCrores} Cr</p>
-            <p className="text-[9px] text-muted-foreground font-medium">Approved funding channels</p>
+            <p className="text-[9px] text-muted-foreground font-medium">Awaiting Government Formation</p>
           </div>
         </div>
       </div>
@@ -362,7 +362,7 @@ export default function Dashboard() {
             {filteredPromises.map((promise) => {
               const budgetAmt = promise.budget_amount 
                 ? `₹${(promise.budget_amount / 10000000).toFixed(1)} Cr`
-                : "No Direct Budget";
+                : "Awaiting Budget Allocation";
 
               const affectedDistricts = promise.districts?.includes("All Districts")
                 ? "State-wide (All Districts)"
