@@ -50,6 +50,11 @@ export default function KanbanBoard() {
   const [transitionDesc, setTransitionDesc] = useState<string>("");
   const [transitionProgress, setTransitionProgress] = useState<number>(0);
 
+  // Verified transition states
+  const [transitionSourceUrl, setTransitionSourceUrl] = useState<string>("");
+  const [transitionBudgetAmount, setTransitionBudgetAmount] = useState<string>("");
+  const [transitionBottleneck, setTransitionBottleneck] = useState<string>("funding");
+
   const loadData = async () => {
     setLoading(true);
     const data = await promiseService.getPromises();
@@ -81,33 +86,99 @@ export default function KanbanBoard() {
     
     if (nextIndex >= 0 && nextIndex < COLUMNS.length) {
       const nextStatus = COLUMNS[nextIndex];
-      const promise = promises.find((p) => p.id === id);
       
-      // Auto-populate default progress guess for transition
-      let defaultProgress = promise?.progress_percentage || 0;
-      if (nextStatus === "Completed") defaultProgress = 100;
-      else if (nextStatus === "Announced") defaultProgress = 0;
-      else if (nextStatus === "In Progress" && defaultProgress < 40) defaultProgress = 50;
+      const progressMap: Record<PromiseStatus, number> = {
+        "Announced": 10,
+        "Planned": 30,
+        "Budget Allocated": 50,
+        "In Progress": 75,
+        "Delayed": 40,
+        "Blocked": 20,
+        "Completed": 100
+      };
 
       setActiveTransition({ id, nextStatus });
-      setTransitionProgress(defaultProgress);
-      setTransitionDesc(`Transitioning manifesto promise to ${nextStatus} stage.`);
+      setTransitionProgress(progressMap[nextStatus]);
+      setTransitionDesc("");
+      setTransitionSourceUrl("");
+      setTransitionBudgetAmount("");
+      setTransitionBottleneck("funding");
     }
   };
 
   const submitTransition = async () => {
     if (!activeTransition) return;
 
-    await promiseService.transitionPromiseStatus(
-      activeTransition.id,
-      activeTransition.nextStatus,
-      transitionProgress,
-      transitionDesc
-    );
+    // Validate general required fields
+    if (!transitionSourceUrl.trim() || !transitionDesc.trim()) {
+      alert("Please fill out all required fields: Credible Source URL and Justification.");
+      return;
+    }
 
-    setActiveTransition(null);
-    setTransitionDesc("");
-    loadData();
+    // Validate source URL format
+    try {
+      new URL(transitionSourceUrl);
+    } catch (_) {
+      alert("Please enter a valid, absolute URL for the credible source.");
+      return;
+    }
+
+    const progressMap: Record<PromiseStatus, number> = {
+      "Announced": 10,
+      "Planned": 30,
+      "Budget Allocated": 50,
+      "In Progress": 75,
+      "Delayed": 40,
+      "Blocked": 20,
+      "Completed": 100
+    };
+
+    const targetStatus = activeTransition.nextStatus;
+    const updateFields: Partial<PromiseItem> = {
+      status: targetStatus,
+      progress_percentage: progressMap[targetStatus]
+    };
+
+    let budgetText = "";
+    if (targetStatus === "Budget Allocated") {
+      const budgetNum = Number(transitionBudgetAmount);
+      if (isNaN(budgetNum) || budgetNum <= 0) {
+        alert("Please enter a valid, positive budget amount in Rupees.");
+        return;
+      }
+      updateFields.budget_amount = budgetNum;
+      budgetText = `Allocated Budget: ₹${(budgetNum / 10000000).toFixed(1)} Crores. `;
+    }
+
+    const updated = await promiseService.updatePromise(activeTransition.id, updateFields);
+
+    if (updated) {
+      let bottleneckText = "";
+      if (targetStatus === "Delayed" || targetStatus === "Blocked") {
+        const bottleneckLabels: Record<string, string> = {
+          funding: "Funding Constraints",
+          legal: "Legal Dispute",
+          administrative: "Administrative Approvals",
+          other: "Other Bottlenecks"
+        };
+        bottleneckText = `[Identified Bottleneck: ${bottleneckLabels[transitionBottleneck] || "General"}] `;
+      }
+
+      await promiseService.addUpdate({
+        promise_id: activeTransition.id,
+        title: `Status Updated to ${targetStatus}`,
+        description: `${transitionDesc}. ${budgetText}${bottleneckText}Verified Source: ${transitionSourceUrl}`,
+        created_by: "Official Administrator",
+      });
+
+      // Clear states
+      setActiveTransition(null);
+      setTransitionDesc("");
+      setTransitionSourceUrl("");
+      setTransitionBudgetAmount("");
+      setTransitionBottleneck("funding");
+      loadData();
+    }
   };
 
   if (loading) {
@@ -148,42 +219,78 @@ export default function KanbanBoard() {
           <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 space-y-4 shadow-2xl">
             <div className="flex items-center gap-2 text-amber-500 pb-2 border-b border-border">
               <ShieldAlert className="w-5 h-5" />
-              <h3 className="text-sm font-bold uppercase tracking-wider">Authorize Status Transition</h3>
+              <h3 className="text-sm font-bold uppercase tracking-wider">Verify Status Transition</h3>
             </div>
             
             <p className="text-xs text-muted-foreground">
-              You are updating status to <span className="text-foreground font-bold">{activeTransition.nextStatus}</span>. 
-              Please record an official gazette or timeline description.
+              You are updating status to <span className="text-foreground font-black">{activeTransition.nextStatus}</span> (Auto-assigned Progress: <span className="font-mono text-foreground font-bold">{transitionProgress}%</span>).
             </p>
 
             <div className="space-y-4">
-              {/* Progress Slider */}
+              {/* Credible Source Field */}
               <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase">
-                  <span>Enter Progress Percentage</span>
-                  <span className="text-foreground font-mono">{transitionProgress}%</span>
-                </div>
+                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
+                  Credible Verification Source URL *
+                </label>
                 <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={transitionProgress}
-                  onChange={(e) => setTransitionProgress(Number(e.target.value))}
-                  className="w-full h-1 bg-muted rounded-lg appearance-none cursor-pointer accent-blue-500"
+                  type="url"
+                  required
+                  value={transitionSourceUrl}
+                  onChange={(e) => setTransitionSourceUrl(e.target.value)}
+                  placeholder="https://tn.gov.in/pressrelease/..."
+                  className="w-full bg-background border border-border focus:border-amber-500 text-xs px-3 py-2 rounded-lg text-foreground outline-none transition-colors"
                 />
               </div>
 
+              {/* Status-specific Fields: Budget Allocated */}
+              {activeTransition.nextStatus === "Budget Allocated" && (
+                <div className="space-y-1.5 animate-fade-in">
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
+                    Allocated Budget Amount in Rupees *
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min="1"
+                    value={transitionBudgetAmount}
+                    onChange={(e) => setTransitionBudgetAmount(e.target.value)}
+                    placeholder="Enter amount in Rupees (e.g. 150000000)..."
+                    className="w-full bg-background border border-border focus:border-amber-500 text-xs px-3 py-2 rounded-lg text-foreground outline-none transition-colors"
+                  />
+                </div>
+              )}
+
+              {/* Status-specific Fields: Delayed or Blocked */}
+              {(activeTransition.nextStatus === "Delayed" || activeTransition.nextStatus === "Blocked") && (
+                <div className="space-y-1.5 animate-fade-in">
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
+                    Primary Bottleneck Category *
+                  </label>
+                  <select
+                    value={transitionBottleneck}
+                    onChange={(e) => setTransitionBottleneck(e.target.value)}
+                    className="w-full bg-background border border-border text-xs p-2 rounded-lg text-foreground cursor-pointer outline-none focus:border-amber-500"
+                  >
+                    <option value="funding">Funding Constraints & Treasury Clearance</option>
+                    <option value="legal">Legal Dispute or Court Stay Orders</option>
+                    <option value="administrative">Pending Inter-departmental approvals</option>
+                    <option value="other">Other Socio-economic Bottlenecks</option>
+                  </select>
+                </div>
+              )}
+
               {/* Log Entry Description */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase">
-                  Official Progress Description
+                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
+                  Official Progress Justification & Audited Notes *
                 </label>
                 <textarea
                   rows={3}
+                  required
                   value={transitionDesc}
                   onChange={(e) => setTransitionDesc(e.target.value)}
                   placeholder="Record what was achieved to warrant this status transition..."
-                  className="w-full bg-background border border-border focus:border-primary text-xs p-3 rounded-xl text-foreground outline-none outline-0 resize-none"
+                  className="w-full bg-background border border-border focus:border-amber-500 text-xs p-3 rounded-lg text-foreground outline-none resize-none transition-colors"
                 />
               </div>
             </div>
@@ -191,17 +298,23 @@ export default function KanbanBoard() {
             {/* Buttons */}
             <div className="flex items-center justify-end gap-3 pt-2">
               <button
-                onClick={() => setActiveTransition(null)}
-                className="px-3.5 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                onClick={() => {
+                  setActiveTransition(null);
+                  setTransitionDesc("");
+                  setTransitionSourceUrl("");
+                  setTransitionBudgetAmount("");
+                  setTransitionBottleneck("funding");
+                }}
+                className="px-3.5 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
-                disabled={!transitionDesc.trim()}
+                disabled={!transitionDesc.trim() || !transitionSourceUrl.trim()}
                 onClick={submitTransition}
-                className="px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl transition-all"
+                className="px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl transition-all cursor-pointer"
               >
-                Record Update
+                Confirm Transition
               </button>
             </div>
           </div>
