@@ -30,16 +30,28 @@ const extractQuotedFigure = (text: string): string | undefined => {
   return matches.length === 1 ? matches[0] : matches.join(" / ");
 };
 
+interface RawPillar {
+  title: string;
+  sections?: {
+    section_name: string;
+    key_promises?: string[];
+  }[];
+}
+
+interface RawFrameworkData {
+  pillars?: RawPillar[];
+}
+
 // Parser engine mapping raw manifesto JSON structures into unified PromiseItem schema
-const parseFrameworkData = (rawData: any, frameworkName: "Aram" | "Porul" | "Inbam"): PromiseItem[] => {
+const parseFrameworkData = (rawData: RawFrameworkData, frameworkName: "Aram" | "Porul" | "Inbam"): PromiseItem[] => {
   const list: PromiseItem[] = [];
   if (!rawData || !rawData.pillars) return list;
 
-  rawData.pillars.forEach((pillar: any, pIdx: number) => {
+  rawData.pillars.forEach((pillar: RawPillar, pIdx: number) => {
     const pillarTitle = cleanString(pillar.title);
     
     if (pillar.sections) {
-      pillar.sections.forEach((section: any, sIdx: number) => {
+      pillar.sections.forEach((section: { section_name: string; key_promises?: string[] }, sIdx: number) => {
         const sectionName = cleanString(section.section_name);
         
         if (section.key_promises) {

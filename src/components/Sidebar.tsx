@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
@@ -14,13 +14,7 @@ import { isSupabaseConfigured } from "@/lib/db";
 
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
-  const [dbStatus, setDbStatus] = useState<"Local" | "Cloud">("Local");
-
-  useEffect(() => {
-    if (isSupabaseConfigured) {
-      setDbStatus("Cloud");
-    }
-  }, []);
+  const dbStatus = isSupabaseConfigured ? "Cloud" : "Local";
 
   const navItems = [
     {

@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-05-06
+
+### Added
+- Comprehensive automated testing suite using Vitest and JSDOM to verify local fallback engines and service methods.
+- Rigid pre-commit formatting and linting pipelines utilizing Prettier, Husky, and lint-staged.
+- Legal, security, and community governance pillars with the MIT License, Code of Conduct, and responsible disclosure policies.
+- Standardized GitHub issue (Bug Report, Feature Request) and pull request integration templates.
+- Complete, institutional overhaul of all six core documentation manuals to prepare for community onboarding.
+
 ## [0.2.0] - 2026-05-06
 
 ### Added
