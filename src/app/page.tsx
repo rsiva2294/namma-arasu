@@ -17,7 +17,10 @@ import {
   Coins, 
   MapPin, 
   ChevronRight,
-  Sparkles
+  Sparkles,
+  Clock,
+  Award,
+  ArrowRight
 } from "lucide-react";
 import { 
   BarChart, 
@@ -144,16 +147,61 @@ export default function Dashboard() {
         </Link>
       </div>
 
-      {/* Dynamic Example Card Warning/Info Banner */}
-      <div className="p-4 rounded-2xl border border-amber-500/20 bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-start gap-3 shadow-[0_0_15px_rgba(245,158,11,0.05)]">
-        <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5 animate-pulse" />
-        <div className="space-y-1">
-          <p className="text-xs font-bold uppercase tracking-wider">Showcase Demonstration Active</p>
-          <p className="text-[11px] leading-relaxed text-amber-700/80 dark:text-amber-400/80 font-medium">
-            The database mock data has been purged. We have retained exactly **one pre-seeded example card** (&ldquo;TVK's Journey: A Commitment to Lead the Nation&rdquo;) to explicitly showcase NammaArasu's interactive progress timeline, official gazette log entries, citizen-uploaded proof verification, and public discussion feeds.
-          </p>
+      {/* Featured Showcase Hero Card — Always visible at the top */}
+      <Link
+        href="/promises/p0-tvk-journey"
+        className="group block p-6 rounded-2xl border border-blue-500/20 bg-gradient-to-br from-blue-500/5 via-card to-purple-500/5 shadow-sm hover:shadow-md hover:border-blue-500/30 transition-all duration-300"
+      >
+        <div className="flex flex-col lg:flex-row lg:items-center gap-5">
+          {/* Left: Icon + Text */}
+          <div className="flex-1 space-y-3">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-md border bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 uppercase tracking-wider">
+                <Award className="w-3 h-3" /> Showcase Example
+              </span>
+              <span className="inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-md border bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20 uppercase tracking-wider">
+                Completed · 100%
+              </span>
+            </div>
+            <h3 className="text-lg font-black text-foreground tracking-tight leading-snug group-hover:text-blue-500 transition-colors">
+              TVK&apos;s Journey: A Commitment to Lead the Nation
+            </h3>
+            <p className="text-xs text-muted-foreground leading-relaxed max-w-2xl">
+              A verified timeline tracing TVK&apos;s historic rise — from party launch in Feb 2024, the 15M-member grassroots drive, the Aram-Porul-Inbam manifesto unveiling in April 2026, through to winning 108 seats with 85.1% voter turnout.
+            </p>
+          </div>
+
+          {/* Right: Mini timeline */}
+          <div className="shrink-0 flex flex-col gap-2.5 lg:min-w-[280px]">
+            {[
+              { date: "Feb 2, 2024", label: "TVK officially launched" },
+              { date: "Jul 2025", label: "15M membership milestone" },
+              { date: "Apr 16, 2026", label: "Aram-Porul-Inbam manifesto unveiled" },
+              { date: "Apr 23, 2026", label: "Single-phase polling · 85.1% turnout" },
+              { date: "May 5, 2026", label: "108 seats won · CM-designate" }
+            ].map((item, i) => (
+              <div key={i} className="flex items-start gap-2.5">
+                <div className="mt-0.5 h-2 w-2 rounded-full bg-blue-500 shrink-0" />
+                <div className="flex items-baseline gap-2">
+                  <span className="text-[9px] font-bold text-muted-foreground whitespace-nowrap uppercase tracking-wide">{item.date}</span>
+                  <span className="text-[10px] text-foreground font-medium">{item.label}</span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+
+        {/* Bottom CTA */}
+        <div className="mt-5 pt-4 border-t border-border flex items-center justify-between">
+          <div className="flex items-center gap-1.5 text-[10px] font-semibold text-amber-600 dark:text-amber-400">
+            <AlertTriangle className="w-3.5 h-3.5" />
+            <span className="uppercase tracking-wider">This is a pre-seeded example demonstrating NammaArasu&apos;s interactive features</span>
+          </div>
+          <span className="inline-flex items-center gap-1 text-xs font-bold text-blue-500 group-hover:gap-2 transition-all">
+            View Full Timeline <ArrowRight className="w-3.5 h-3.5" />
+          </span>
+        </div>
+      </Link>
 
       {/* Metrics Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">

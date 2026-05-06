@@ -78,7 +78,7 @@ const parseFrameworkData = (rawData: any, frameworkName: "Aram" | "Porul" | "Inb
 const TVK_JOURNEY_PROMISE: PromiseItem = {
   id: "p0-tvk-journey",
   title: "TVK's Journey: A Commitment to Lead the Nation",
-  description: "A comprehensive, verified timeline tracing Tamilaga Vettri Kazhagam's historic journey from official party launch in 2024, to policy framework definition in 2025, culminating in emerging as a major force in the 2026 Tamil Nadu Assembly elections.",
+  description: "A comprehensive, verified timeline tracing Tamilaga Vettri Kazhagam's historic journey from official party launch on February 2, 2024, through the April 16, 2026 Aram-Porul-Inbam manifesto unveiling, culminating in emerging as a major force winning 108 seats in the 2026 Tamil Nadu Assembly elections.",
   framework: "Aram",
   pillar: "Tamil Identity and Pride",
   section: "Political Milestones",
@@ -93,7 +93,7 @@ const TVK_JOURNEY_PROMISE: PromiseItem = {
   departments: ["TVK General Secretariat"],
   districts: ["All Districts"],
   created_at: "2024-02-02T10:00:00Z",
-  updated_at: "2026-05-04T18:30:00Z"
+  updated_at: "2026-05-05T10:00:00Z"
 };
 
 // Complete full-manifesto list generated dynamically at compile time
@@ -110,33 +110,41 @@ export const INITIAL_MOCK_UPDATES: UpdateItem[] = [
     id: "tvk_2024_launch",
     promise_id: "p0-tvk-journey",
     title: "Tamilaga Vettri Kazhagam (TVK) officially launched",
-    description: "Actor Vijay officially launched Tamilaga Vettri Kazhagam (TVK) in Chennai, formally entering politics with a commitment to bring a righteous, identity-focused government to Tamil Nadu.",
+    description: "Actor Vijay officially launched Tamilaga Vettri Kazhagam (TVK) on February 2, 2024. This date is historically significant as it marked his formal transition from a three-decade cinema career to full-time politics with a commitment to bring a righteous, identity-focused government to Tamil Nadu.",
     created_by: "Official TVK Announcement",
     created_at: "2024-02-02T10:00:00Z"
   },
   {
-    id: "tvk_2025_framework",
+    id: "tvk_2025_membership",
     promise_id: "p0-tvk-journey",
-    title: "Aram–Porul–Inbam governance framework gains prominence",
-    description: "TVK publicly emphasized the Aram, Porul, and Inbam governance framework in policy discussions and manifesto positioning to lay the ethical foundation for the state's development.",
-    created_by: "TVK Policy Secretariat",
+    title: "Massive state-wide membership drive crosses 15 million",
+    description: "In July 2025, TVK focused intensively on its massive state-wide membership drive, successfully crossing 15 million members by September 2025 to build a solid grassroots network across all 234 constituencies.",
+    created_by: "TVK General Secretariat",
     created_at: "2025-07-15T12:00:00Z"
+  },
+  {
+    id: "tvk_2026_framework",
+    promise_id: "p0-tvk-journey",
+    title: "Aram–Porul–Inbam governance framework officially unveiled",
+    description: "While ethical governance was discussed throughout 2025, the official unveiling of the 'Aram–Porul–Inbam' (Ethics, Wealth, Joy) framework as the core of their manifesto occurred on April 16, 2026, during the election campaign, establishing the ethical foundation for the state's development.",
+    created_by: "TVK Manifesto Committee",
+    created_at: "2026-04-16T11:00:00Z"
   },
   {
     id: "tn_2026_polling",
     promise_id: "p0-tvk-journey",
-    title: "Tamil Nadu Assembly election polling held",
-    description: "Polling for the Tamil Nadu Assembly election was conducted across all 234 constituencies with massive state-wide voter participation.",
-    created_by: "Election Commission Report",
+    title: "Single-phase Tamil Nadu Assembly polling conducted",
+    description: "The Election Commission of India (ECI) conducted polling for all 234 constituencies in a single phase on Thursday, April 23, 2026. The state recorded a record-breaking, historic voter turnout of 85.1%.",
+    created_by: "Election Commission of India",
     created_at: "2026-04-23T18:00:00Z"
   },
   {
     id: "tn_2026_results",
     promise_id: "p0-tvk-journey",
-    title: "TVK emerges as major force in Tamil Nadu election results",
-    description: "Multiple media outlets reported TVK winning around 107–108 seats in the 234-strength Tamil Nadu Assembly elections, emerging as a historic leading force. Coalition discussions underway.",
+    title: "TVK emerges as historic leading force winning 108 seats",
+    description: "Following the vote counting on May 4, 2026, major media reports on May 5, 2026 declared TVK as the 'historic leading force' in Tamil Nadu after winning 108 seats. Vijay is officially the Chief Minister-designate, with his swearing-in ceremony scheduled for May 7, 2026.",
     created_by: "Election Results Live Coverage",
-    created_at: "2026-05-04T18:30:00Z"
+    created_at: "2026-05-05T10:00:00Z"
   }
 ];
 
@@ -148,9 +156,9 @@ export const INITIAL_MOCK_EVIDENCE: EvidenceItem[] = [
     type: "document",
     file_url: "https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?auto=format&fit=crop&w=800&q=80",
     district: "Chennai",
-    description: "Official results and news coverage clippings detailing TVK's historic performance of 107-108 seats in the Tamil Nadu Assembly elections.",
+    description: "Official results and news coverage clippings detailing TVK's historic performance of winning 108 seats in the Tamil Nadu Assembly elections.",
     verification_status: "verified",
-    created_at: "2026-05-04T19:00:00Z"
+    created_at: "2026-05-05T12:00:00Z"
   }
 ];
 

@@ -49,7 +49,7 @@ const LOCAL_KEYS = {
   COMMENTS: "namma_arasu_comments",
 };
 
-const CACHE_VERSION = "v3_budget_cleared";
+const CACHE_VERSION = "v4_factchecked";
 
 // Safely initialize local storage with mock data
 const initLocalStorage = () => {
