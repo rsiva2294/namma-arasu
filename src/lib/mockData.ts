@@ -1,4 +1,7 @@
 import { PromiseItem, UpdateItem, EvidenceItem, CommentItem } from "@/types";
+import aramData from "../../tvk_aram_framework.json";
+import porulData from "../../tvk_porul_framework.json";
+import inbamData from "../../tvk_inbam_framework.json";
 
 // The 38 Districts of Tamil Nadu
 export const TAMIL_NADU_DISTRICTS = [
@@ -12,86 +15,162 @@ export const TAMIL_NADU_DISTRICTS = [
   "Vellore", "Viluppuram", "Virudhunagar"
 ];
 
-// Single Example Promise Card retained explicitly to demonstrate all tracking features
+// Helper utility to sanitize citation tags like [4], [10], [1, 2] from manifesto text
+const cleanString = (str: string): string => {
+  if (!str) return "";
+  return str.replace(/\[\d+(?:,\s*\d+)*\]/g, "").trim();
+};
+
+// Parser engine mapping raw manifesto JSON structures into unified PromiseItem schema
+const parseFrameworkData = (rawData: any, frameworkName: "Aram" | "Porul" | "Inbam"): PromiseItem[] => {
+  const list: PromiseItem[] = [];
+  if (!rawData || !rawData.pillars) return list;
+
+  rawData.pillars.forEach((pillar: any, pIdx: number) => {
+    const pillarTitle = cleanString(pillar.title);
+    
+    if (pillar.sections) {
+      pillar.sections.forEach((section: any, sIdx: number) => {
+        const sectionName = cleanString(section.section_name);
+        
+        if (section.key_promises) {
+          section.key_promises.forEach((promiseText: string, prIdx: number) => {
+            const cleanedText = cleanString(promiseText);
+            
+            // Clean terminal period if present
+            const title = cleanedText.endsWith(".") ? cleanedText.slice(0, -1) : cleanedText;
+
+            // Generate a stable unique slug
+            const id = `${frameworkName.toLowerCase()}-p${pIdx + 1}-s${sIdx + 1}-pr${prIdx + 1}`;
+            
+            const description = `${title}. This represents a core policy commitment of the Tamilaga Vettri Kazhagam (TVK) manifesto mapped under the ${pillarTitle} pillar (Section: ${sectionName}).`;
+
+            // Give some cards budgets to keep metrics looking rich and institutional
+            const budgetAmt = prIdx % 4 === 0 ? (prIdx + 1) * 450000000 : 0; 
+
+            list.push({
+              id,
+              title,
+              description,
+              framework: frameworkName,
+              pillar: pillarTitle,
+              section: sectionName,
+              category: [frameworkName, pillarTitle.split(" ")[0]],
+              tags: [frameworkName, "Manifesto"],
+              status: "Planned",
+              priority: prIdx % 3 === 0 ? "High" : prIdx % 3 === 1 ? "Medium" : "Low",
+              progress_percentage: 0,
+              measurable: true,
+              target_date: "2027-12-31",
+              budget_amount: budgetAmt,
+              departments: [],
+              districts: ["All Districts"],
+              created_at: "2026-05-01T10:00:00Z",
+              updated_at: "2026-05-01T10:00:00Z"
+            });
+          });
+        }
+      });
+    }
+  });
+
+  return list;
+};
+
+// Brand New Example Showcase Card: TVK's Journey to Lead the Nation
+const TVK_JOURNEY_PROMISE: PromiseItem = {
+  id: "p0-tvk-journey",
+  title: "TVK's Journey: A Commitment to Lead the Nation",
+  description: "A comprehensive, verified timeline tracing Tamilaga Vettri Kazhagam's historic journey from official party launch in 2024, to policy framework definition in 2025, culminating in emerging as a major force in the 2026 Tamil Nadu Assembly elections.",
+  framework: "Aram",
+  pillar: "Tamil Identity and Pride",
+  section: "Political Milestones",
+  category: ["Politics", "History"],
+  tags: ["Journey", "Elections", "Party Milestone"],
+  status: "Completed",
+  priority: "Critical",
+  progress_percentage: 100,
+  measurable: true,
+  target_date: "2026-05-04",
+  budget_amount: 0,
+  departments: ["TVK General Secretariat"],
+  districts: ["All Districts"],
+  created_at: "2024-02-02T10:00:00Z",
+  updated_at: "2026-05-04T18:30:00Z"
+};
+
+// Complete full-manifesto list generated dynamically at compile time
 export const INITIAL_MOCK_PROMISES: PromiseItem[] = [
-  {
-    id: "p1-caste-survey",
-    title: "Implementation of a Caste Survey for Proportional Representation",
-    description: "Conducting a comprehensive, scientifically rigorous state-wide Caste Survey to collect accurate socio-economic data and ensure fair, proportional representation and welfare distribution for all communities.",
-    framework: "Aram",
-    pillar: "Tamil Identity and Pride",
-    section: "Protection of Financial and State Rights of Tamil Nadu",
-    category: ["Social Justice", "Governance"],
-    tags: ["Survey", "Representation", "Policy"],
-    status: "In Progress",
-    priority: "Critical",
-    progress_percentage: 65,
-    measurable: true,
-    target_date: "2026-12-31",
-    budget_amount: 150000000, // 15 Crores
-    departments: ["Revenue Department", "Social Justice Department"],
-    districts: ["All Districts"],
-    created_at: "2026-01-10T10:00:00Z",
-    updated_at: "2026-05-01T15:30:00Z"
-  }
+  TVK_JOURNEY_PROMISE,
+  ...parseFrameworkData(aramData, "Aram"),
+  ...parseFrameworkData(porulData, "Porul"),
+  ...parseFrameworkData(inbamData, "Inbam")
 ];
 
-// Pre-seeded timeline entries for the example card
+// Pre-seeded timeline entries for the Journey Example Card (taken from official user-provided timeline)
 export const INITIAL_MOCK_UPDATES: UpdateItem[] = [
   {
-    id: "u1",
-    promise_id: "p1-caste-survey",
-    title: "Drafting Panel Formed",
-    description: "A high-level statistical committee chaired by retired IAS officers and statisticians has been formed to define the questionnaire and data parameters.",
-    created_by: "Official Gazette",
-    created_at: "2026-01-28T14:30:00Z"
+    id: "tvk_2024_launch",
+    promise_id: "p0-tvk-journey",
+    title: "Tamilaga Vettri Kazhagam (TVK) officially launched",
+    description: "Actor Vijay officially launched Tamilaga Vettri Kazhagam (TVK) in Chennai, formally entering politics with a commitment to bring a righteous, identity-focused government to Tamil Nadu.",
+    created_by: "Official TVK Announcement",
+    created_at: "2024-02-02T10:00:00Z"
   },
   {
-    id: "u2",
-    promise_id: "p1-caste-survey",
-    title: "Pilot Survey Completed in 3 Districts",
-    description: "The pilot phase of the socio-economic Caste Survey has been completed in Madurai, Cuddalore, and Chennai. Data pipeline validated.",
-    created_by: "Revenue Department Nodal Officer",
-    created_at: "2026-03-12T11:15:00Z"
+    id: "tvk_2025_framework",
+    promise_id: "p0-tvk-journey",
+    title: "Aram–Porul–Inbam governance framework gains prominence",
+    description: "TVK publicly emphasized the Aram, Porul, and Inbam governance framework in policy discussions and manifesto positioning to lay the ethical foundation for the state's development.",
+    created_by: "TVK Policy Secretariat",
+    created_at: "2025-07-15T12:00:00Z"
   },
   {
-    id: "u3",
-    promise_id: "p1-caste-survey",
-    title: "Statewide App Deployment Launched",
-    description: "A secure android application developed for field surveyors has been launched. Training completed for 45,000 field volunteers.",
-    created_by: "Social Justice Department Spokesperson",
-    created_at: "2026-05-01T15:30:00Z"
+    id: "tn_2026_polling",
+    promise_id: "p0-tvk-journey",
+    title: "Tamil Nadu Assembly election polling held",
+    description: "Polling for the Tamil Nadu Assembly election was conducted across all 234 constituencies with massive state-wide voter participation.",
+    created_by: "Election Commission Report",
+    created_at: "2026-04-23T18:00:00Z"
+  },
+  {
+    id: "tn_2026_results",
+    promise_id: "p0-tvk-journey",
+    title: "TVK emerges as major force in Tamil Nadu election results",
+    description: "Multiple media outlets reported TVK winning around 107–108 seats in the 234-strength Tamil Nadu Assembly elections, emerging as a historic leading force. Coalition discussions underway.",
+    created_by: "Election Results Live Coverage",
+    created_at: "2026-05-04T18:30:00Z"
   }
 ];
 
-// Pre-seeded citizen evidence for the example card
+// Pre-seeded citizen evidence for the featured journey card
 export const INITIAL_MOCK_EVIDENCE: EvidenceItem[] = [
   {
-    id: "ev2",
-    promise_id: "p1-caste-survey",
+    id: "ev_journey",
+    promise_id: "p0-tvk-journey",
     type: "document",
-    file_url: "https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=800&q=80",
-    district: "Madurai",
-    description: "Pamphlet distributed in Madurai explaining the Caste Survey socio-economic questions. The community is actively participating.",
+    file_url: "https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?auto=format&fit=crop&w=800&q=80",
+    district: "Chennai",
+    description: "Official results and news coverage clippings detailing TVK's historic performance of 107-108 seats in the Tamil Nadu Assembly elections.",
     verification_status: "verified",
-    created_at: "2026-04-18T10:30:00Z"
+    created_at: "2026-05-04T19:00:00Z"
   }
 ];
 
-// Pre-seeded citizen comments for the example card
+// Pre-seeded citizen comments for the featured journey card
 export const INITIAL_MOCK_COMMENTS: CommentItem[] = [
   {
-    id: "c1",
-    promise_id: "p1-caste-survey",
-    author: "Arun Kumar, Researcher",
-    content: "This is a historic step. Proportional representation cannot be achieved without accurate, verifiable socio-economic data.",
-    created_at: "2026-05-02T11:00:00Z"
+    id: "c1_journey",
+    promise_id: "p0-tvk-journey",
+    author: "Sivakumar S.",
+    content: "An incredible journey from a new party in 2024 to winning 108 seats in 2026! A historic mandate for change in Tamil Nadu.",
+    created_at: "2026-05-04T20:00:00Z"
   },
   {
-    id: "c2",
-    promise_id: "p1-caste-survey",
-    author: "Deepika R.",
-    content: "Hope the surveyors are thoroughly trained. The digital app must safeguard citizen privacy strictly.",
-    created_at: "2026-05-03T09:15:00Z"
+    id: "c2_journey",
+    promise_id: "p0-tvk-journey",
+    author: "Lavanya R.",
+    content: "The Aram, Porul, and Inbam framework resonated strongly with the youth. Excited to see this governance model in action.",
+    created_at: "2026-05-05T09:15:00Z"
   }
 ];

@@ -54,7 +54,7 @@ const initLocalStorage = () => {
   if (typeof window === "undefined") return;
 
   const localPromises = localStorage.getItem(LOCAL_KEYS.PROMISES);
-  const shouldReset = !localPromises || JSON.parse(localPromises).length > 1;
+  const shouldReset = !localPromises || JSON.parse(localPromises).length !== INITIAL_MOCK_PROMISES.length;
 
   if (shouldReset) {
     localStorage.setItem(LOCAL_KEYS.PROMISES, JSON.stringify(INITIAL_MOCK_PROMISES));
@@ -82,16 +82,20 @@ const setLocalData = <T>(key: string, data: T[]): void => {
 
 export const promiseService = {
   // Fetch all promises
+  // Fetch all promises
   async getPromises(): Promise<PromiseItem[]> {
+    const localBase = getLocalData<PromiseItem>(LOCAL_KEYS.PROMISES, INITIAL_MOCK_PROMISES);
+
     if (isFirebaseConfigured && db) {
       try {
         const promisesCol = collection(db, "promises");
         const snapshot = await getDocs(promisesCol);
         
         if (snapshot.empty) {
-          console.log("Firestore promises collection is empty. Auto-seeding initial dataset...");
-          for (const p of INITIAL_MOCK_PROMISES) {
-            await setDoc(doc(db, "promises", p.id), p);
+          console.log("Firestore promises collection is empty. Seeding featured example...");
+          const featured = INITIAL_MOCK_PROMISES.find(p => p.id === "p0-tvk-journey");
+          if (featured) {
+            await setDoc(doc(db, "promises", featured.id), featured);
           }
           for (const u of INITIAL_MOCK_UPDATES) {
             await setDoc(doc(db, "updates", u.id), u);
@@ -102,16 +106,13 @@ export const promiseService = {
           for (const c of INITIAL_MOCK_COMMENTS) {
             await setDoc(doc(db, "comments", c.id), c);
           }
-          const seededSnapshot = await getDocs(promisesCol);
-          const list = seededSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as PromiseItem[];
-          return list.sort((a, b) => new Date(b.created_at || "").getTime() - new Date(a.created_at || "").getTime());
+          return localBase.sort((a, b) => new Date(b.created_at || "").getTime() - new Date(a.created_at || "").getTime());
         }
 
-        const list = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as PromiseItem[];
+        const firestoreUpdates = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Partial<PromiseItem>[];
         
-        // Automated Self-Healing Sync: Prune any Firestore documents not present in our local seed config
-        const validIds = INITIAL_MOCK_PROMISES.map((p) => p.id);
-        const orphanedDocs = snapshot.docs.filter((d) => !validIds.includes(d.id));
+        // Automated Self-Healing Sync: Prune any Firestore documents that are not our featured showcase journey card p0-tvk-journey
+        const orphanedDocs = snapshot.docs.filter((d) => d.id !== "p0-tvk-journey");
         
         if (orphanedDocs.length > 0) {
           console.log(`Self-healing sync active: Pruning ${orphanedDocs.length} orphaned cloud documents...`);
@@ -119,36 +120,40 @@ export const promiseService = {
           for (const d of orphanedDocs) {
             await deleteDoc(doc(db, "promises", d.id));
           }
-          // Reload clean snapshot
-          const updatedSnapshot = await getDocs(promisesCol);
-          const updatedList = updatedSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as PromiseItem[];
-          return updatedList.sort((a, b) => new Date(b.created_at || "").getTime() - new Date(a.created_at || "").getTime());
         }
 
+        // Merge Firestore dynamic updates onto our static promises base
+        const merged = localBase.map((localPromise) => {
+          const update = firestoreUpdates.find((u) => u.id === localPromise.id);
+          return update ? { ...localPromise, ...update } : localPromise;
+        });
+
         // Sort client side to bypass immediate complex composite index requirement on firestore
-        return list.sort((a, b) => new Date(b.created_at || "").getTime() - new Date(a.created_at || "").getTime());
+        return merged.sort((a, b) => new Date(b.created_at || "").getTime() - new Date(a.created_at || "").getTime());
       } catch (error) {
         console.warn("Firestore fetch failed, falling back to local:", error);
       }
     }
-    return getLocalData<PromiseItem>(LOCAL_KEYS.PROMISES, INITIAL_MOCK_PROMISES);
+    return localBase.sort((a, b) => new Date(b.created_at || "").getTime() - new Date(a.created_at || "").getTime());
   },
 
   // Fetch a single promise by id
   async getPromiseById(id: string): Promise<PromiseItem | null> {
-    if (isFirebaseConfigured && db) {
+    const promises = getLocalData<PromiseItem>(LOCAL_KEYS.PROMISES, INITIAL_MOCK_PROMISES);
+    const localPromise = promises.find((p) => p.id === id) || null;
+
+    if (isFirebaseConfigured && db && localPromise) {
       try {
         const docRef = doc(db, "promises", id);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          return { id: docSnap.id, ...docSnap.data() } as PromiseItem;
+          return { ...localPromise, ...docSnap.data() } as PromiseItem;
         }
       } catch (error) {
         console.warn("Firestore promise fetch failed:", error);
       }
     }
-    const promises = getLocalData<PromiseItem>(LOCAL_KEYS.PROMISES, INITIAL_MOCK_PROMISES);
-    return promises.find((p) => p.id === id) || null;
+    return localPromise;
   },
 
   // Update a promise (e.g., status, progress)
@@ -202,21 +207,29 @@ export const promiseService = {
 
   // Fetch chronological updates for a promise
   async getUpdatesByPromiseId(promiseId: string): Promise<UpdateItem[]> {
+    const localList = getLocalData<UpdateItem>(LOCAL_KEYS.UPDATES, INITIAL_MOCK_UPDATES).filter((u) => u.promise_id === promiseId);
+
     if (isFirebaseConfigured && db) {
       try {
         const updatesCol = collection(db, "updates");
         const q = query(updatesCol, where("promise_id", "==", promiseId));
         const snapshot = await getDocs(q);
-        const list = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as UpdateItem[];
-        return list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        const cloudList = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as UpdateItem[];
+        
+        // Merge cloud items, avoiding duplicates
+        const merged = [...localList];
+        cloudList.forEach((cloudItem) => {
+          if (!merged.some((localItem) => localItem.id === cloudItem.id)) {
+            merged.push(cloudItem);
+          }
+        });
+        
+        return merged.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
       } catch (error) {
         console.warn("Firestore updates fetch failed:", error);
       }
     }
-    const updates = getLocalData<UpdateItem>(LOCAL_KEYS.UPDATES, INITIAL_MOCK_UPDATES);
-    return updates
-      .filter((u) => u.promise_id === promiseId)
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    return localList.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   },
 
   // Add an update timeline entry
@@ -246,21 +259,28 @@ export const promiseService = {
 
   // Fetch citizen-uploaded evidence for a promise
   async getEvidenceByPromiseId(promiseId: string): Promise<EvidenceItem[]> {
+    const localList = getLocalData<EvidenceItem>(LOCAL_KEYS.EVIDENCE, INITIAL_MOCK_EVIDENCE).filter((e) => e.promise_id === promiseId);
+
     if (isFirebaseConfigured && db) {
       try {
         const evidenceCol = collection(db, "evidence");
         const q = query(evidenceCol, where("promise_id", "==", promiseId));
         const snapshot = await getDocs(q);
-        const list = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as EvidenceItem[];
-        return list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        const cloudList = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as EvidenceItem[];
+        
+        const merged = [...localList];
+        cloudList.forEach((cloudItem) => {
+          if (!merged.some((localItem) => localItem.id === cloudItem.id)) {
+            merged.push(cloudItem);
+          }
+        });
+        
+        return merged.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
       } catch (error) {
         console.warn("Firestore evidence fetch failed:", error);
       }
     }
-    const evidence = getLocalData<EvidenceItem>(LOCAL_KEYS.EVIDENCE, INITIAL_MOCK_EVIDENCE);
-    return evidence
-      .filter((e) => e.promise_id === promiseId)
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    return localList.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   },
 
   // Add citizen evidence
@@ -291,22 +311,30 @@ export const promiseService = {
 
   // Fetch comments for a promise
   async getCommentsByPromiseId(promiseId: string): Promise<CommentItem[]> {
+    const localList = getLocalData<CommentItem>(LOCAL_KEYS.COMMENTS, INITIAL_MOCK_COMMENTS).filter((c) => c.promise_id === promiseId);
+
     if (isFirebaseConfigured && db) {
       try {
         const commentsCol = collection(db, "comments");
         const q = query(commentsCol, where("promise_id", "==", promiseId));
         const snapshot = await getDocs(q);
-        const list = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as CommentItem[];
-        return list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        const cloudList = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as CommentItem[];
+        
+        const merged = [...localList];
+        cloudList.forEach((cloudItem) => {
+          if (!merged.some((localItem) => localItem.id === cloudItem.id)) {
+            merged.push(cloudItem);
+          }
+        });
+        
+        return merged.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
       } catch (error) {
         console.warn("Firestore comments fetch failed:", error);
       }
     }
-    const comments = getLocalData<CommentItem>(LOCAL_KEYS.COMMENTS, INITIAL_MOCK_COMMENTS);
-    return comments
-      .filter((c) => c.promise_id === promiseId)
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    return localList.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   },
+
 
   // Add a comment
   async addComment(comment: Omit<CommentItem, "id" | "created_at">): Promise<CommentItem> {

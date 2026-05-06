@@ -150,7 +150,7 @@ export default function Dashboard() {
         <div className="space-y-1">
           <p className="text-xs font-bold uppercase tracking-wider">Showcase Demonstration Active</p>
           <p className="text-[11px] leading-relaxed text-amber-700/80 dark:text-amber-400/80 font-medium">
-            The database mock data has been purged. We have retained exactly **one pre-seeded example card** (&ldquo;Implementation of a Caste Survey&rdquo;) to explicitly showcase NammaArasu's interactive progress timeline, official gazette log entries, citizen-uploaded proof verification, and public discussion feeds.
+            The database mock data has been purged. We have retained exactly **one pre-seeded example card** (&ldquo;TVK's Journey: A Commitment to Lead the Nation&rdquo;) to explicitly showcase NammaArasu's interactive progress timeline, official gazette log entries, citizen-uploaded proof verification, and public discussion feeds.
           </p>
         </div>
       </div>
@@ -387,7 +387,7 @@ export default function Dashboard() {
                         {promise.framework} Framework
                       </span>
 
-                      {promise.id === "p1-caste-survey" && (
+                      {promise.id === "p0-tvk-journey" && (
                         <span className="text-[9px] font-bold px-2 py-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 rounded-md uppercase tracking-wider animate-pulse">
                           ⚠️ Example Card
                         </span>

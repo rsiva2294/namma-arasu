@@ -195,7 +195,7 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
       </div>
 
       {/* Example Showcase Warning Banner */}
-      {promise.id === "p1-caste-survey" && (
+      {promise.id === "p0-tvk-journey" && (
         <div className="p-4 rounded-2xl border border-amber-500/20 bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-start gap-3 shadow-[0_0_15px_rgba(245,158,11,0.05)]">
           <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
           <div className="space-y-1">
