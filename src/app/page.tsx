@@ -476,9 +476,20 @@ export default function Dashboard() {
                     </div>
 
                     <div className="flex items-center justify-between text-[10px] font-semibold text-muted-foreground pt-0.5">
-                      <span className="flex items-center gap-1">
-                        <Coins className="w-3.5 h-3.5 text-amber-500/80" />
-                        <span className="text-muted-foreground">{budgetAmt}</span>
+                      <span className="flex flex-col gap-0.5">
+                        <span className="flex items-center gap-1">
+                          <Coins className="w-3.5 h-3.5 text-amber-500/80" />
+                          <span className="text-muted-foreground">
+                            {promise.manifesto_quoted_figure
+                              ? `Promised: ${promise.manifesto_quoted_figure}`
+                              : "No figure quoted"}
+                          </span>
+                        </span>
+                        {promise.budget_amount ? (
+                          <span className="text-[9px] text-teal-600 dark:text-teal-400 pl-5">
+                            Allocated: ₹{(promise.budget_amount / 10000000).toFixed(1)} Cr
+                          </span>
+                        ) : null}
                       </span>
 
                       <span className="flex items-center gap-1">

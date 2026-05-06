@@ -21,6 +21,15 @@ const cleanString = (str: string): string => {
   return str.replace(/\[\d+(?:,\s*\d+)*\]/g, "").trim();
 };
 
+// Extract ₹ figures quoted in manifesto promise text (e.g. "₹500 Crore", "₹5 Lakh", "₹15,000")
+const extractQuotedFigure = (text: string): string | undefined => {
+  // Match patterns like ₹500 Crore, ₹5,000 Crore, ₹15,000, ₹10 Lakhs, ₹2,50,000, ₹44 per liter
+  const matches = text.match(/₹[\d,]+(?:\.\d+)?\s*(?:Crore|Lakh|Lakhs|per liter)?/gi);
+  if (!matches || matches.length === 0) return undefined;
+  // If multiple figures, join them
+  return matches.length === 1 ? matches[0] : matches.join(" / ");
+};
+
 // Parser engine mapping raw manifesto JSON structures into unified PromiseItem schema
 const parseFrameworkData = (rawData: any, frameworkName: "Aram" | "Porul" | "Inbam"): PromiseItem[] => {
   const list: PromiseItem[] = [];
@@ -45,6 +54,9 @@ const parseFrameworkData = (rawData: any, frameworkName: "Aram" | "Porul" | "Inb
             
             const description = `${title}. This represents a core policy commitment of the Tamilaga Vettri Kazhagam (TVK) manifesto mapped under the ${pillarTitle} pillar (Section: ${sectionName}).`;
 
+            // Extract any ₹ figure quoted directly in the manifesto text
+            const quotedFigure = extractQuotedFigure(promiseText);
+
             list.push({
               id,
               title,
@@ -60,6 +72,7 @@ const parseFrameworkData = (rawData: any, frameworkName: "Aram" | "Porul" | "Inb
               measurable: true,
               target_date: "2027-12-31",
               budget_amount: 0,
+              manifesto_quoted_figure: quotedFigure,
               departments: [],
               districts: ["All Districts"],
               created_at: "2026-05-01T10:00:00Z",

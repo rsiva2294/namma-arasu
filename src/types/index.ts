@@ -31,6 +31,7 @@ export type PromiseItem = {
 
   target_date?: string;
   budget_amount?: number;
+  manifesto_quoted_figure?: string;
 
   departments?: string[];
   districts?: string[];

@@ -29,6 +29,23 @@ The codebase must prioritize:
 
 ---
 
+# AGENT WORKFLOW RULES
+
+## NEVER do any of the following without explicit user consent:
+
+* `git commit`
+* `git push`
+* `firebase deploy` (or any deployment command)
+* launching browser subagents for automated testing or verification
+
+Always ask the user for permission BEFORE executing these actions.
+
+Present what you plan to commit/deploy/test, and wait for explicit approval.
+
+This rule has NO exceptions.
+
+---
+
 # DEVELOPMENT STANDARDS
 
 ## ALWAYS:

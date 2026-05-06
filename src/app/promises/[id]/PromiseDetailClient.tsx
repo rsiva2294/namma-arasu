@@ -20,7 +20,8 @@ import {
   ShieldCheck,
   User,
   Activity,
-  Layers
+  Layers,
+  ExternalLink
 } from "lucide-react";
 
 type PageProps = {
@@ -538,9 +539,17 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
               <div className="p-2 h-9 w-9 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0 text-amber-500">
                 <Coins className="w-4 h-4" />
               </div>
-              <div>
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">Approved Budget</p>
-                <p className="text-xs font-bold text-foreground">{budgetCrores}</p>
+              <div className="space-y-1">
+                {promise.manifesto_quoted_figure && (
+                  <div>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">Manifesto Quoted Figure</p>
+                    <p className="text-xs font-bold text-amber-600 dark:text-amber-400">{promise.manifesto_quoted_figure}</p>
+                  </div>
+                )}
+                <div>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">Approved Budget</p>
+                  <p className="text-xs font-bold text-foreground">{budgetCrores}</p>
+                </div>
               </div>
             </div>
 
@@ -604,11 +613,22 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
               <div className="p-2 h-9 w-9 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center shrink-0 text-purple-500">
                 <Layers className="w-4 h-4" />
               </div>
-              <div>
+              <div className="space-y-1.5">
                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">Manifesto Mapping</p>
                 <p className="text-xs font-bold text-foreground leading-relaxed">
                   Section: {promise.section}
                 </p>
+                {promise.id !== "p0-tvk-journey" && promise.framework && (
+                  <a
+                    href={`/manifesto/tvk_${promise.framework.toLowerCase()}.pdf`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-500 hover:text-blue-400 transition-colors mt-1"
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    <span>View Original Manifesto PDF</span>
+                  </a>
+                )}
               </div>
             </div>
 

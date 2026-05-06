@@ -40,6 +40,12 @@ export const Sidebar: React.FC = () => {
       path: "/districts",
       icon: Map,
       desc: "Regional Mapping"
+    },
+    {
+      name: "Manifesto",
+      path: "/manifesto",
+      icon: BookOpen,
+      desc: "Original Source Documents"
     }
   ];
 
