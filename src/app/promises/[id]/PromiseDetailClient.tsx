@@ -194,6 +194,19 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
         </Link>
       </div>
 
+      {/* Example Showcase Warning Banner */}
+      {promise.id === "p1-caste-survey" && (
+        <div className="p-4 rounded-2xl border border-amber-500/20 bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-start gap-3 shadow-[0_0_15px_rgba(245,158,11,0.05)]">
+          <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <p className="text-xs font-bold uppercase tracking-wider">Example Showcase Card</p>
+            <p className="text-[11px] leading-relaxed text-amber-700/80 dark:text-amber-400/80 font-medium">
+              This card is a pre-seeded demonstration example showing NammaArasu's interactive progress timeline, official gazette log entries, citizen-uploaded proof verification, and public discussion feeds.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Main Header Card */}
       <div className="p-6 rounded-2xl border border-border bg-card shadow-sm">
         <div className="space-y-4">

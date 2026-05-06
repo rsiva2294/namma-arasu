@@ -144,6 +144,17 @@ export default function Dashboard() {
         </Link>
       </div>
 
+      {/* Dynamic Example Card Warning/Info Banner */}
+      <div className="p-4 rounded-2xl border border-amber-500/20 bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-start gap-3 shadow-[0_0_15px_rgba(245,158,11,0.05)]">
+        <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5 animate-pulse" />
+        <div className="space-y-1">
+          <p className="text-xs font-bold uppercase tracking-wider">Showcase Demonstration Active</p>
+          <p className="text-[11px] leading-relaxed text-amber-700/80 dark:text-amber-400/80 font-medium">
+            The database mock data has been purged. We have retained exactly **one pre-seeded example card** (&ldquo;Implementation of a Caste Survey&rdquo;) to explicitly showcase NammaArasu's interactive progress timeline, official gazette log entries, citizen-uploaded proof verification, and public discussion feeds.
+          </p>
+        </div>
+      </div>
+
       {/* Metrics Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         {/* Metric 1 */}
@@ -375,6 +386,12 @@ export default function Dashboard() {
                       }`}>
                         {promise.framework} Framework
                       </span>
+
+                      {promise.id === "p1-caste-survey" && (
+                        <span className="text-[9px] font-bold px-2 py-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 rounded-md uppercase tracking-wider animate-pulse">
+                          ⚠️ Example Card
+                        </span>
+                      )}
 
                       <div className="flex items-center gap-2">
                         <PriorityBadge priority={promise.priority} />

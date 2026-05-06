@@ -245,9 +245,16 @@ export default function KanbanBoard() {
                         <div className="space-y-3">
                           {/* Top tags row */}
                           <div className="flex items-center justify-between gap-2">
-                            <span className="text-[9px] font-bold text-blue-500 bg-blue-500/10 px-1.5 py-0.5 rounded border border-blue-500/20">
-                              {p.framework}
-                            </span>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="text-[9px] font-bold text-blue-500 bg-blue-500/10 px-1.5 py-0.5 rounded border border-blue-500/20">
+                                {p.framework}
+                              </span>
+                              {p.id === "p1-caste-survey" && (
+                                <span className="text-[9px] font-bold px-1.5 py-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 rounded uppercase tracking-wider animate-pulse">
+                                  ⚠️ Example
+                                </span>
+                              )}
+                            </div>
                             <PriorityBadge priority={p.priority} />
                           </div>
 

@@ -53,16 +53,13 @@ const LOCAL_KEYS = {
 const initLocalStorage = () => {
   if (typeof window === "undefined") return;
 
-  if (!localStorage.getItem(LOCAL_KEYS.PROMISES)) {
+  const localPromises = localStorage.getItem(LOCAL_KEYS.PROMISES);
+  const shouldReset = !localPromises || JSON.parse(localPromises).length > 1;
+
+  if (shouldReset) {
     localStorage.setItem(LOCAL_KEYS.PROMISES, JSON.stringify(INITIAL_MOCK_PROMISES));
-  }
-  if (!localStorage.getItem(LOCAL_KEYS.UPDATES)) {
     localStorage.setItem(LOCAL_KEYS.UPDATES, JSON.stringify(INITIAL_MOCK_UPDATES));
-  }
-  if (!localStorage.getItem(LOCAL_KEYS.EVIDENCE)) {
     localStorage.setItem(LOCAL_KEYS.EVIDENCE, JSON.stringify(INITIAL_MOCK_EVIDENCE));
-  }
-  if (!localStorage.getItem(LOCAL_KEYS.COMMENTS)) {
     localStorage.setItem(LOCAL_KEYS.COMMENTS, JSON.stringify(INITIAL_MOCK_COMMENTS));
   }
 };
