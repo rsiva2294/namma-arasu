@@ -1,0 +1,8 @@
+# apphosting.yaml
+# Firebase App Hosting Configuration
+schemaVersion: v1beta
+
+# Environment variables and secrets
+env:
+  - variable: GEMINI_API_KEY
+    secret: GEMINI_API_KEY
