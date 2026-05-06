@@ -60,6 +60,7 @@ export default function ManifestoAiSearchBox() {
   const [selectedCitationId, setSelectedCitationId] = useState<string | null>(null);
   const [highlightedPromiseId, setHighlightedPromiseId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"instant" | "ai">("instant");
+  const [isStaticHostingFallback, setIsStaticHostingFallback] = useState(false);
 
   const localDocs = docs as ClientDoc[];
   const dictionary = dict as Record<string, string[]>;
@@ -194,6 +195,7 @@ export default function ManifestoAiSearchBox() {
     setLoading(true);
     setError(null);
     setActiveTab("instant");
+    setIsStaticHostingFallback(false);
 
     try {
       const response = await fetch("/api/manifesto-search/semantic-match", {
@@ -201,6 +203,25 @@ export default function ManifestoAiSearchBox() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query }),
       });
+
+      if (response.status === 404) {
+        setIsStaticHostingFallback(true);
+        const normalizedQuery = query.toLowerCase().trim();
+        const t1Matches = localDocs
+          .filter((doc) => {
+            return (
+              doc.promise.toLowerCase().includes(normalizedQuery) ||
+              doc.section_name.toLowerCase().includes(normalizedQuery) ||
+              doc.keywords.some((k) => k.toLowerCase() === normalizedQuery)
+            );
+          })
+          .slice(0, 5);
+        setSemanticResults(t1Matches);
+        if (t1Matches.length === 0) {
+          setError("No highly matching promises found. Try different keywords.");
+        }
+        return;
+      }
 
       if (!response.ok) {
         throw new Error("Semantic vector search failed to connect.");
@@ -247,6 +268,13 @@ export default function ManifestoAiSearchBox() {
           fingerprint,
         }),
       });
+
+      if (response.status === 404) {
+        setIsStaticHostingFallback(true);
+        setError("AI Synthesis is unavailable in the fully static build. Showing local matched results below.");
+        setAiAnswer(null);
+        return;
+      }
 
       if (response.status === 429) {
         const quotaErr = await response.json();
@@ -405,6 +433,12 @@ export default function ManifestoAiSearchBox() {
           )}
 
           {/* DETERMINISTIC RETRIEVAL RESULTS (TIER 1 / TIER 2) */}
+          {isStaticHostingFallback && !loading && (
+            <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-blue-50/50 dark:bg-blue-950/10 border border-blue-100 dark:border-blue-900/20 rounded-xl mb-4 text-[11px] text-blue-700 dark:text-blue-400 font-medium leading-relaxed">
+              <AlertCircle size={13} className="shrink-0 text-blue-500" />
+              <span>Running in Static Hosting: Vector Search & AI Synthesis require a server runtime and have gracefully defaulted to high-precision local search.</span>
+            </div>
+          )}
           {!loading && (
             <div>
               <div className="flex items-center justify-between mb-3.5 pb-2 border-b border-slate-100 dark:border-zinc-900">
