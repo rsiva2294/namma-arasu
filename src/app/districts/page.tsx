@@ -21,8 +21,10 @@ import {
   Sparkles
 } from "lucide-react";
 import { TAMIL_NADU_DISTRICTS } from "@/lib/mockData";
+import { useLanguage } from "@/lib/i18n";
 
 export default function DistrictView() {
+  const { lang, t } = useLanguage();
   const [promises, setPromises] = useState<PromiseItem[]>([]);
   const [selectedDistrict, setSelectedDistrict] = useState<string>("Statewide");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -78,7 +80,7 @@ export default function DistrictView() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
         <div className="h-10 w-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-xs text-muted-foreground font-medium animate-pulse">Aggregating regional development metrics...</p>
+        <p className="text-xs text-muted-foreground font-medium animate-pulse">{lang === "en" ? "Aggregating regional development metrics..." : "வட்டார வளர்ச்சித் தரவுகளைச் சேகரிக்கிறது..."}</p>
       </div>
     );
   }
@@ -89,10 +91,12 @@ export default function DistrictView() {
       <div>
         <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
           <Map className="w-5 h-5 text-blue-500" />
-          Regional Development & Manifesto Atlas
+          {lang === "en" ? "Regional Development & Manifesto Atlas" : "வட்டார வளர்ச்சி & தேர்தல் அறிக்கை வரைபடம்"}
         </h2>
         <p className="text-xs text-muted-foreground font-medium mt-1">
-          Monitor targeted localized investments, district-specific MSME clusters, and statewide programs across Tamil Nadu's administrative landscape.
+          {lang === "en" 
+            ? "Monitor targeted localized investments, district-specific MSME clusters, and statewide programs across Tamil Nadu's administrative landscape."
+            : "தமிழ்நாட்டின் நிர்வாகப் பரப்பில் குறிப்பிட்ட வட்டார முதலீடுகள், மாவட்ட வாரியான குறு, சிறு & நடுத்தர தொழில் தொகுப்புகள் மற்றும் மாநில அளவிலான திட்டங்களைக் கண்காணிக்கவும்."}
         </p>
       </div>
 
@@ -100,45 +104,45 @@ export default function DistrictView() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="p-4 rounded-2xl bg-card border border-border flex flex-col justify-between h-24 shadow-sm">
           <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-[10px] font-bold uppercase tracking-wider">Statewide Programs</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider">{t.statewideProgs}</span>
             <Layers className="w-4 h-4 text-blue-500" />
           </div>
           <div>
-            <p className="text-lg font-black text-foreground">{statewideCount} Commitments</p>
-            <p className="text-[9px] text-muted-foreground font-medium">Applicable to all 38 districts</p>
+            <p className="text-lg font-black text-foreground">{statewideCount} {lang === "en" ? "Commitments" : "வாக்குறுதிகள்"}</p>
+            <p className="text-[9px] text-muted-foreground font-medium">{lang === "en" ? "Applicable to all 38 districts" : "அனைத்து 38 மாவட்டங்களுக்கும் பொருந்தும்"}</p>
           </div>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border flex flex-col justify-between h-24 shadow-sm">
           <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-[10px] font-bold uppercase tracking-wider">Targeted Regional Schemes</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider">{t.targetedRegional}</span>
             <MapPin className="w-4 h-4 text-emerald-500" />
           </div>
           <div>
-            <p className="text-lg font-black text-emerald-500">{regionalCount} Commitments</p>
-            <p className="text-[9px] text-muted-foreground font-medium">Mapped to localized districts</p>
+            <p className="text-lg font-black text-emerald-500">{regionalCount} {lang === "en" ? "Commitments" : "வாக்குறுதிகள்"}</p>
+            <p className="text-[9px] text-muted-foreground font-medium">{lang === "en" ? "Mapped to localized districts" : "குறிப்பிட்ட மாவட்டங்களுடன் இணைக்கப்பட்டுள்ளது"}</p>
           </div>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border flex flex-col justify-between h-24 shadow-sm">
           <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-[10px] font-bold uppercase tracking-wider">Impacted Districts</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider">{t.impactedDistricts}</span>
             <Sparkles className="w-4 h-4 text-amber-500" />
           </div>
           <div>
-            <p className="text-lg font-black text-amber-500">{localizedDistricts.length} Districts</p>
-            <p className="text-[9px] text-muted-foreground font-medium">With direct targeted policies</p>
+            <p className="text-lg font-black text-amber-500">{localizedDistricts.length} {lang === "en" ? "Districts" : "மாவட்டங்கள்"}</p>
+            <p className="text-[9px] text-muted-foreground font-medium">{lang === "en" ? "With direct targeted policies" : "நேரடி வட்டாரத் திட்டங்களைக் கொண்டவை"}</p>
           </div>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border flex flex-col justify-between h-24 shadow-sm">
           <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-[10px] font-bold uppercase tracking-wider">Active Audit Loop</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider">{t.activeAuditLoop}</span>
             <Activity className="w-4 h-4 text-purple-500" />
           </div>
           <div>
-            <p className="text-lg font-black text-purple-500">100% Verifiable</p>
-            <p className="text-[9px] text-muted-foreground font-medium">Linked to public evidence logs</p>
+            <p className="text-lg font-black text-purple-500">{lang === "en" ? "100% Verifiable" : "100% சரிபார்க்கக்கூடியது"}</p>
+            <p className="text-[9px] text-muted-foreground font-medium">{lang === "en" ? "Linked to public evidence logs" : "பொதுமக்கள் ஆதாரப் பதிவுகளுடன் இணைக்கப்பட்டுள்ளது"}</p>
           </div>
         </div>
       </div>
@@ -148,7 +152,7 @@ export default function DistrictView() {
         {/* Left Side: District & Region Selectors */}
         <div className="lg:col-span-4 space-y-4">
           <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">
-            Select Administrative Scope
+            {t.activeScope}
           </p>
 
           <div className="flex flex-col gap-2">
@@ -169,8 +173,8 @@ export default function DistrictView() {
                   <Layers className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-wide text-foreground">Statewide Focus</p>
-                  <p className="text-[9px] text-muted-foreground mt-0.5">Tamil Nadu Core Manifesto</p>
+                  <p className="text-xs font-bold uppercase tracking-wide text-foreground">{t.statewideFocus}</p>
+                  <p className="text-[9px] text-muted-foreground mt-0.5">{t.statewideCore}</p>
                 </div>
               </div>
               <span className="text-xs font-bold bg-muted px-2.5 py-0.5 border border-border rounded text-foreground">
@@ -181,7 +185,7 @@ export default function DistrictView() {
             {/* Targeted Districts Sub-Header */}
             <div className="pt-2 pb-1">
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-1">
-                Targeted Local Districts
+                {t.targetedDistricts}
               </p>
             </div>
 
@@ -208,8 +212,8 @@ export default function DistrictView() {
                           <MapPin className="w-3.5 h-3.5" />
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-foreground">{dist.name} District</p>
-                          <p className="text-[9px] text-muted-foreground mt-0.5">Localized commitments</p>
+                          <p className="text-xs font-bold text-foreground">{dist.name} {lang === "en" ? "District" : "மாவட்டம்"}</p>
+                          <p className="text-[9px] text-muted-foreground mt-0.5">{lang === "en" ? "Localized commitments" : "வட்டார வாக்குறுதிகள்"}</p>
                         </div>
                       </div>
                       <span className="text-xs font-bold bg-muted px-2.5 py-0.5 border border-border rounded text-foreground">
@@ -221,7 +225,7 @@ export default function DistrictView() {
               </div>
             ) : (
               <div className="p-4 text-center rounded-xl border border-border bg-card">
-                <p className="text-[10px] text-muted-foreground">No active localized district commitments found.</p>
+                <p className="text-[10px] text-muted-foreground">{lang === "en" ? "No active localized district commitments found." : "வட்டார வாக்குறுதிகள் எதுவும் இல்லை."}</p>
               </div>
             )}
           </div>
@@ -232,7 +236,7 @@ export default function DistrictView() {
           {/* List Header & Search Bar */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">
-              {selectedDistrict === "Statewide" ? "Statewide Programs" : `${selectedDistrict} District`} ({filteredPromises.length})
+              {selectedDistrict === "Statewide" ? t.statewideProgs : `${selectedDistrict} ${lang === "en" ? "District" : "மாவட்டம்"}`} ({filteredPromises.length})
             </p>
 
             <div className="relative w-full sm:w-64 shrink-0">
@@ -241,7 +245,7 @@ export default function DistrictView() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search targeted policies..."
+                placeholder={t.searchPolicies}
                 className="w-full bg-card border border-border focus:border-primary text-xs pl-9 pr-4 py-2 rounded-xl text-foreground outline-none focus:ring-1 focus:ring-blue-500/50 transition-all"
               />
             </div>
@@ -271,12 +275,12 @@ export default function DistrictView() {
                               ? "bg-cyan-500/10 text-cyan-800 dark:text-cyan-400 border-cyan-500/20"
                               : "bg-purple-500/10 text-purple-800 dark:text-purple-400 border-purple-500/20"
                           }`}>
-                            {p.framework} Framework
+                            {lang === "en" ? `${p.framework} Framework` : `${p.framework === "Aram" ? "அறம்" : p.framework === "Porul" ? "பொருள்" : "இன்பம்"} அமைப்பு`}
                           </span>
 
                           {promiseNum && (
                             <span className="text-[9px] font-bold px-2 py-0.5 bg-muted text-muted-foreground border border-border rounded-md uppercase tracking-wider">
-                              Commitment #{promiseNum} • {p.pillar}
+                              {lang === "en" ? `Commitment #${promiseNum}` : `வாக்குறுதி #${promiseNum}`} • {p.pillar}
                             </span>
                           )}
                         </div>
@@ -297,7 +301,7 @@ export default function DistrictView() {
                     <div className="pt-3 border-t border-border flex items-center justify-between gap-4 flex-wrap">
                       <div className="flex items-center gap-4">
                         <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase">
-                          <span>Progress</span>
+                          <span>{t.progress}</span>
                           <span className="text-foreground font-mono">{p.progress_percentage}%</span>
                         </div>
                         <div className="w-24 bg-muted rounded-full h-1.5 overflow-hidden">
@@ -306,7 +310,7 @@ export default function DistrictView() {
                       </div>
 
                       <div className="flex items-center gap-1 text-[10px] font-bold text-blue-500 group-hover:text-blue-400 transition-colors uppercase tracking-wider">
-                        <span>View Audit Details</span>
+                        <span>{t.viewDetails}</span>
                         <ChevronRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
                       </div>
                     </div>
@@ -317,9 +321,9 @@ export default function DistrictView() {
           ) : (
             <div className="p-10 text-center rounded-2xl border border-border bg-card shadow-sm space-y-2">
               <Layers className="w-8 h-8 text-muted-foreground/60 mx-auto animate-pulse" />
-              <p className="text-xs font-bold text-foreground">No matching commitments found</p>
+              <p className="text-xs font-bold text-foreground">{lang === "en" ? "No matching commitments found" : "பொருந்தும் வாக்குறுதிகள் எதுவும் இல்லை"}</p>
               <p className="text-[10px] text-muted-foreground">
-                Try adjusting your search query to locate targeted regional policy programs.
+                {lang === "en" ? "Try adjusting your search query to locate targeted regional policy programs." : "வட்டாரத் திட்டங்களைக் கண்டறிய உங்கள் தேடல் சொற்களை மாற்றவும்."}
               </p>
             </div>
           )}

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { promiseService } from "@/lib/db";
 import { PromiseItem, PromiseStatus } from "@/types";
 import PriorityBadge from "@/components/PriorityBadge";
+import { useLanguage } from "@/lib/i18n";
 import { 
   Kanban, 
   ChevronLeft, 
@@ -38,6 +39,7 @@ const COLUMN_COLORS: Record<PromiseStatus, string> = {
 };
 
 export default function KanbanBoard() {
+  const { lang, t } = useLanguage();
   const [promises, setPromises] = useState<PromiseItem[]>([]);
   const [role, setRole] = useState<"Citizen" | "Admin">("Citizen");
   const [loading, setLoading] = useState<boolean>(true);
@@ -185,7 +187,7 @@ export default function KanbanBoard() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
         <div className="h-10 w-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-xs text-muted-foreground font-medium animate-pulse">Loading work boards...</p>
+        <p className="text-xs text-muted-foreground font-medium animate-pulse">{lang === "en" ? "Loading work boards..." : "அமலாக்கப் பலகைகளை ஏற்றுகிறது..."}</p>
       </div>
     );
   }
@@ -197,18 +199,20 @@ export default function KanbanBoard() {
         <div>
           <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
             <Kanban className="w-5 h-5 text-blue-500" />
-            JIRA-Style Workflow Board
+            {lang === "en" ? "JIRA-Style Workflow Board" : "ஆளுமைப் பணிப்பாய்வு கான்பான் பலகை"}
           </h2>
           <p className="text-xs text-muted-foreground font-medium mt-1">
-            Track implementation cycles chronologically across 7 development lanes. 
-            {role === "Admin" && " Click arrows to change stages & log progress updates."}
+            {lang === "en" 
+              ? "Track implementation cycles chronologically across 7 development lanes." 
+              : "7 வளர்ச்சிப் பிரிவுகளின் கீழ் ஆளுமையின் அமலாக்க காலச்சுழற்சிகளை வரிசைக்கிரமமாகக் கண்காணிக்கவும்."}
+            {role === "Admin" && (lang === "en" ? " Click arrows to change stages & log progress updates." : " நிலைகளை மாற்றவும் புதிய முன்னேற்றங்களைப் பதிவு செய்யவும் அம்புக்குறிகளைக் கிளிக் செய்யவும்.")}
           </p>
         </div>
 
         {role !== "Admin" && (
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/40 border border-border text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
             <Info className="w-3.5 h-3.5 text-blue-500" />
-            <span>Viewer Only • Enable Admin in Header to Edit</span>
+            <span>{lang === "en" ? "Viewer Only • Enable Admin in Header to Edit" : "பார்வையாளர் பயன்முறை • திருத்தத் தலைப்பில் நிர்வாகியை இயக்கவும்"}</span>
           </div>
         )}
       </div>
@@ -219,18 +223,33 @@ export default function KanbanBoard() {
           <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 space-y-4 shadow-2xl">
             <div className="flex items-center gap-2 text-amber-500 pb-2 border-b border-border">
               <ShieldAlert className="w-5 h-5" />
-              <h3 className="text-sm font-bold uppercase tracking-wider">Verify Status Transition</h3>
+              <h3 className="text-sm font-bold uppercase tracking-wider">{lang === "en" ? "Verify Status Transition" : "ஆளுமை நிலை மாற்றத்தை சரிபார்க்கவும்"}</h3>
             </div>
             
             <p className="text-xs text-muted-foreground">
-              You are updating status to <span className="text-foreground font-black">{activeTransition.nextStatus}</span> (Auto-assigned Progress: <span className="font-mono text-foreground font-bold">{transitionProgress}%</span>).
+              {lang === "en" ? (
+                <>
+                  You are updating status to <span className="text-foreground font-black">{activeTransition.nextStatus}</span> (Auto-assigned Progress: <span className="font-mono text-foreground font-bold">{transitionProgress}%</span>).
+                </>
+              ) : (
+                <>
+                  ஆளுமை நிலையை <span className="text-foreground font-black">{
+                    activeTransition.nextStatus === "Announced" ? "அறிவிக்கப்பட்டது" :
+                    activeTransition.nextStatus === "Planned" ? "திட்டமிடப்பட்டது" :
+                    activeTransition.nextStatus === "Budget Allocated" ? "பட்ஜெட் ஒதுக்கப்பட்டது" :
+                    activeTransition.nextStatus === "In Progress" ? "செயல்பாட்டில்" :
+                    activeTransition.nextStatus === "Delayed" ? "தாமதமானது" :
+                    activeTransition.nextStatus === "Blocked" ? "முடக்கப்பட்டது" : "முடிந்தது"
+                  }</span> ஆக மாற்றுகிறீர்கள் (தானியங்கி முன்னேற்றம்: <span className="font-mono text-foreground font-bold">{transitionProgress}%</span>).
+                </>
+              )}
             </p>
 
             <div className="space-y-4">
               {/* Credible Source Field */}
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
-                  Credible Verification Source URL *
+                  {lang === "en" ? "Credible Verification Source URL *" : "நம்பகமான சரிபார்ப்பு மூல URL *"}
                 </label>
                 <input
                   type="url"
@@ -246,7 +265,7 @@ export default function KanbanBoard() {
               {activeTransition.nextStatus === "Budget Allocated" && (
                 <div className="space-y-1.5 animate-fade-in">
                   <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
-                    Allocated Budget Amount in Rupees *
+                    {lang === "en" ? "Allocated Budget Amount in Rupees *" : "ஒதுக்கப்பட்ட பட்ஜெட் தொகை (ரூபாயில்) *"}
                   </label>
                   <input
                     type="number"
@@ -254,7 +273,7 @@ export default function KanbanBoard() {
                     min="1"
                     value={transitionBudgetAmount}
                     onChange={(e) => setTransitionBudgetAmount(e.target.value)}
-                    placeholder="Enter amount in Rupees (e.g. 150000000)..."
+                    placeholder={lang === "en" ? "Enter amount in Rupees (e.g. 150000000)..." : "தொகையை ரூபாயில் உள்ளிடவும் (எ.கா. 150000000)..."}
                     className="w-full bg-background border border-border focus:border-amber-500 text-xs px-3 py-2 rounded-lg text-foreground outline-none transition-colors"
                   />
                 </div>
@@ -264,17 +283,17 @@ export default function KanbanBoard() {
               {(activeTransition.nextStatus === "Delayed" || activeTransition.nextStatus === "Blocked") && (
                 <div className="space-y-1.5 animate-fade-in">
                   <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
-                    Primary Bottleneck Category *
+                    {lang === "en" ? "Primary Bottleneck Category *" : "முக்கிய முடக்கக் காரணம் *"}
                   </label>
                   <select
                     value={transitionBottleneck}
                     onChange={(e) => setTransitionBottleneck(e.target.value)}
                     className="w-full bg-background border border-border text-xs p-2 rounded-lg text-foreground cursor-pointer outline-none focus:border-amber-500"
                   >
-                    <option value="funding">Funding Constraints & Treasury Clearance</option>
-                    <option value="legal">Legal Dispute or Court Stay Orders</option>
-                    <option value="administrative">Pending Inter-departmental approvals</option>
-                    <option value="other">Other Socio-economic Bottlenecks</option>
+                    <option value="funding">{lang === "en" ? "Funding Constraints & Treasury Clearance" : "நிதிப் பற்றாக்குறை மற்றும் கருவூல அனுமதி"}</option>
+                    <option value="legal">{lang === "en" ? "Legal Dispute or Court Stay Orders" : "சட்டச் சிக்கல்கள் அல்லது நீதிமன்றத் தடை"}</option>
+                    <option value="administrative">{lang === "en" ? "Pending Inter-departmental approvals" : "துறைகளுக்கு இடையேயான ஒப்புதல் தாமதம்"}</option>
+                    <option value="other">{lang === "en" ? "Other Socio-economic Bottlenecks" : "இதர சமூக-பொருளாதாரத் தடைகள்"}</option>
                   </select>
                 </div>
               )}
@@ -282,14 +301,14 @@ export default function KanbanBoard() {
               {/* Log Entry Description */}
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
-                  Official Progress Justification & Audited Notes *
+                  {lang === "en" ? "Official Progress Justification & Audited Notes *" : "அதிகாரப்பூர்வ முன்னேற்றக் குறிப்பு மற்றும் தணிக்கைக் குறிப்புகள் *"}
                 </label>
                 <textarea
                   rows={3}
                   required
                   value={transitionDesc}
                   onChange={(e) => setTransitionDesc(e.target.value)}
-                  placeholder="Record what was achieved to warrant this status transition..."
+                  placeholder={lang === "en" ? "Record what was achieved to warrant this status transition..." : "இந்த நிலையை மாற்றுவதற்கான காரணங்களைப் பதிவுசெய்க..."}
                   className="w-full bg-background border border-border focus:border-amber-500 text-xs p-3 rounded-lg text-foreground outline-none resize-none transition-colors"
                 />
               </div>
@@ -307,14 +326,14 @@ export default function KanbanBoard() {
                 }}
                 className="px-3.5 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
               >
-                Cancel
+                {lang === "en" ? "Cancel" : "ரத்துசெய்"}
               </button>
               <button
                 disabled={!transitionDesc.trim() || !transitionSourceUrl.trim()}
                 onClick={submitTransition}
                 className="px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl transition-all cursor-pointer"
               >
-                Confirm Transition
+                {lang === "en" ? "Confirm Transition" : "மாற்றத்தை உறுதிசெய்"}
               </button>
             </div>
           </div>
@@ -327,6 +346,16 @@ export default function KanbanBoard() {
           const colPromises = promises.filter((p) => p.status === colName);
           const colorStyles = COLUMN_COLORS[colName];
 
+          // Localize Column Name
+          const localizedColName = 
+            colName === "Announced" ? (lang === "en" ? "Announced" : "அறிவிக்கப்பட்டது") :
+            colName === "Planned" ? (lang === "en" ? "Planned" : "திட்டமிடப்பட்டது") :
+            colName === "Budget Allocated" ? (lang === "en" ? "Budget Allocated" : "பட்ஜெட் ஒதுக்கப்பட்டது") :
+            colName === "In Progress" ? (lang === "en" ? "In Progress" : "செயல்பாட்டில்") :
+            colName === "Delayed" ? (lang === "en" ? "Delayed" : "தாமதமானது") :
+            colName === "Blocked" ? (lang === "en" ? "Blocked" : "முடக்கப்பட்டது") :
+            (lang === "en" ? "Completed" : "நிறைவடைந்தது");
+
           return (
             <div
               key={colName}
@@ -335,7 +364,7 @@ export default function KanbanBoard() {
               {/* Column Header */}
               <div className="flex items-center justify-between pb-3.5 border-b border-border mb-4">
                 <div className="flex items-center gap-2">
-                  <p className="text-xs font-bold text-foreground tracking-wide">{colName}</p>
+                  <p className="text-xs font-bold text-foreground tracking-wide">{localizedColName}</p>
                   <span className="text-[10px] font-bold px-1.5 py-0.5 bg-muted text-muted-foreground rounded-md">
                     {colPromises.length}
                   </span>
@@ -348,7 +377,7 @@ export default function KanbanBoard() {
                   colPromises.map((p) => {
                     const budgetAmt = p.budget_amount 
                       ? `₹${(p.budget_amount / 10000000).toFixed(1)} Cr`
-                      : "No Budget";
+                      : (lang === "en" ? "No Budget" : "பட்ஜெட் இல்லை");
 
                     return (
                       <div
@@ -360,11 +389,11 @@ export default function KanbanBoard() {
                           <div className="flex items-center justify-between gap-2">
                             <div className="flex items-center gap-1.5 flex-wrap">
                               <span className="text-[9px] font-bold text-blue-500 bg-blue-500/10 px-1.5 py-0.5 rounded border border-blue-500/20">
-                                {p.framework}
+                                {lang === "en" ? p.framework : p.framework === "Aram" ? "அறம்" : p.framework === "Porul" ? "பொருள்" : "இன்பம்"}
                               </span>
                               {p.id === "p0-tvk-journey" && (
                                 <span className="text-[9px] font-bold px-1.5 py-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 rounded uppercase tracking-wider animate-pulse">
-                                  ⚠️ Example
+                                  ⚠️ {lang === "en" ? "Example" : "உதாரணம்"}
                                 </span>
                               )}
                             </div>
@@ -384,7 +413,7 @@ export default function KanbanBoard() {
                           {/* Mini Progress */}
                           <div className="space-y-1">
                             <div className="flex items-center justify-between text-[9px] font-bold text-muted-foreground uppercase">
-                              <span>Progress</span>
+                              <span>{t.progress}</span>
                               <span className="font-mono">{p.progress_percentage}%</span>
                             </div>
                             <div className="w-full bg-muted rounded-full h-1 overflow-hidden">
@@ -420,7 +449,7 @@ export default function KanbanBoard() {
                             ) : (
                               <span className="flex items-center gap-1 text-[9px] font-semibold text-muted-foreground">
                                 <MapPin className="w-3 h-3 text-muted-foreground" />
-                                <span>{p.districts?.includes("All Districts") ? "State" : `${p.districts?.length} districts`}</span>
+                                <span>{p.districts?.includes("All Districts") ? (lang === "en" ? "State" : "மாநிலம்") : `${p.districts?.length} ${lang === "en" ? "districts" : "மாவட்டங்கள்"}`}</span>
                               </span>
                             )}
                           </div>
@@ -430,7 +459,7 @@ export default function KanbanBoard() {
                   })
                 ) : (
                   <div className="flex flex-col items-center justify-center py-10 rounded-xl border border-dashed border-border text-muted-foreground/60 text-[10px] font-semibold uppercase">
-                    <span>Empty Stage</span>
+                    <span>{lang === "en" ? "Empty Stage" : "காலியாக உள்ளது"}</span>
                   </div>
                 )}
               </div>

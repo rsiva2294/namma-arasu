@@ -12,11 +12,13 @@ import {
   X
 } from "lucide-react";
 import { isSupabaseConfigured } from "@/lib/db";
+import { useLanguage } from "@/lib/i18n";
 
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
   const dbStatus = isSupabaseConfigured ? "Cloud" : "Local";
   const [isOpen, setIsOpen] = useState(false);
+  const { lang, t } = useLanguage();
 
   useEffect(() => {
     const handleToggle = () => setIsOpen((prev) => !prev);
@@ -36,28 +38,28 @@ export const Sidebar: React.FC = () => {
 
   const navItems = [
     {
-      name: "Dashboard",
+      name: t.dashboard,
       path: "/",
       icon: LayoutDashboard,
-      desc: "Overview & Analytics"
+      desc: lang === "en" ? "Overview & Analytics" : "கண்ணோட்டம் & பகுப்பாய்வு"
     },
     {
-      name: "Kanban Board",
+      name: t.kanbanBoard,
       path: "/kanban",
       icon: Kanban,
-      desc: "Workflow Timeline"
+      desc: lang === "en" ? "Workflow Timeline" : "அமலாக்க காலக்கெடு"
     },
     {
-      name: "District View",
+      name: t.districtAtlas,
       path: "/districts",
       icon: Map,
-      desc: "Regional Mapping"
+      desc: lang === "en" ? "Regional Mapping" : "வட்டார வரைபடம்"
     },
     {
-      name: "Manifesto",
+      name: t.manifestoLibrary,
       path: "/manifesto",
       icon: BookOpen,
-      desc: "Original Source Documents"
+      desc: lang === "en" ? "Original Source Documents" : "அசல் தேர்தல் அறிக்கை"
     }
   ];
 
@@ -80,7 +82,7 @@ export const Sidebar: React.FC = () => {
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between mb-4 px-3 md:mb-2.5">
             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-              Governance Views
+              {lang === "en" ? "Governance Views" : "ஆளுமைப் பார்வைகள்"}
             </p>
             {/* Mobile Drawer Close Button */}
             <button 
@@ -123,18 +125,20 @@ export const Sidebar: React.FC = () => {
         <div className="p-4 rounded-xl bg-muted/30 border border-border flex flex-col gap-3">
           <div className="flex items-center gap-2">
             <Database className={`w-3.5 h-3.5 ${dbStatus === "Cloud" ? "text-emerald-500 animate-pulse" : "text-amber-500"}`} />
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Database Engine</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              {lang === "en" ? "Database Engine" : "தரவுத்தள இயந்திரம்"}
+            </span>
           </div>
           
           <div>
             <div className="flex items-center justify-between text-xs font-semibold text-foreground">
-              <span>{dbStatus === "Cloud" ? "Firebase Cloud" : "Local Storage"}</span>
+              <span>{dbStatus === "Cloud" ? (lang === "en" ? "Firebase Cloud" : "ஃபயர்பேஸ் கிளவுட்") : (lang === "en" ? "Local Storage" : "உள்ளூர் சேமிப்பகம்")}</span>
               <span className={`h-2 w-2 rounded-full ${dbStatus === "Cloud" ? "bg-emerald-500" : "bg-amber-500"}`}></span>
             </div>
             <p className="text-[10px] text-muted-foreground mt-1 leading-relaxed">
               {dbStatus === "Cloud" 
-                ? "Connected to production Cloud Firestore database." 
-                : "Running in Zero-Config Fallback mode. Persisting to browser storage."}
+                ? (lang === "en" ? "Connected to production Cloud Firestore database." : "அதிகாரப்பூர்வ ஃபயர்பேஸ் கிளவுட் தரவுத்தளத்துடன் இணைக்கப்பட்டுள்ளது.")
+                : (lang === "en" ? "Running in Zero-Config Fallback mode. Persisting to browser storage." : "உள்ளூர் சேமிப்பக தற்காலிக தற்காப்பு முறையில் இயங்குகிறது.")}
             </p>
           </div>
         </div>

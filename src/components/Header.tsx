@@ -2,11 +2,13 @@
 
 import React, { useState, useEffect } from "react";
 import { User, ShieldAlert, Calendar, Sun, Moon, Menu } from "lucide-react";
+import { useLanguage } from "@/lib/i18n";
 
 export const Header: React.FC = () => {
   const [role, setRole] = useState<"Citizen" | "Admin">("Citizen");
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [currentDate, setCurrentDate] = useState<string>("");
+  const { lang, setLanguage, t } = useLanguage();
 
   useEffect(() => {
     // Set formatted date
@@ -16,7 +18,7 @@ export const Header: React.FC = () => {
       month: "long",
       day: "numeric",
     };
-    setCurrentDate(new Date().toLocaleDateString("en-US", options));
+    setCurrentDate(new Date().toLocaleDateString(lang === "en" ? "en-US" : "ta-IN", options));
 
     // Get active role from local storage
     const savedRole = localStorage.getItem("namma_arasu_role");
@@ -35,7 +37,7 @@ export const Header: React.FC = () => {
       setTheme("dark");
       document.documentElement.classList.remove("light");
     }
-  }, []);
+  }, [lang]);
 
   const handleRoleToggle = () => {
     const nextRole = role === "Citizen" ? "Admin" : "Citizen";
@@ -81,7 +83,7 @@ export const Header: React.FC = () => {
           <p className="text-xs text-muted-foreground font-medium flex items-center gap-1">
             <span className="text-amber-600 dark:text-amber-500/90 font-semibold tracking-wide font-sans text-[11px]">நம்ம அரசு</span>
             <span className="text-slate-400 font-bold">•</span>
-            <span>Civic Governance Transparency Platform</span>
+            <span>{lang === "en" ? "Civic Governance Transparency Platform" : "மக்களுக்கான ஆளுமைத் தளம்"}</span>
           </p>
         </div>
       </div>
@@ -93,6 +95,16 @@ export const Header: React.FC = () => {
           <Calendar className="w-3.5 h-3.5 text-blue-500" />
           <span>{currentDate}</span>
         </div>
+
+        {/* Language Toggler */}
+        <button
+          onClick={() => setLanguage(lang === "en" ? "ta" : "en")}
+          className="px-2.5 py-1.5 rounded-xl border border-border bg-muted/30 hover:bg-muted/50 text-xs font-extrabold text-foreground transition-all duration-200 shrink-0 cursor-pointer flex items-center gap-1.5"
+          title={lang === "en" ? "Switch to Tamil" : "Switch to English"}
+        >
+          <span>🌐</span>
+          <span className="font-mono tracking-wider">{lang === "en" ? "தமிழ்" : "EN"}</span>
+        </button>
 
         {/* Theme Toggle Button */}
         <button
@@ -124,12 +136,12 @@ export const Header: React.FC = () => {
           {role === "Admin" ? (
             <>
               <ShieldAlert className="w-4 h-4 animate-pulse" style={{ color: "var(--admin-text)" }} />
-              <span>Official Admin Mode</span>
+              <span>{t.adminMode}</span>
             </>
           ) : (
             <>
               <User className="w-4 h-4 text-slate-500 group-hover:text-blue-400 transition-colors" />
-              <span>Public Citizen Mode</span>
+              <span>{t.citizenMode}</span>
             </>
           )}
         </button>

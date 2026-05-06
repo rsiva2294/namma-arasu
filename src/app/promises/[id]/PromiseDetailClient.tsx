@@ -24,12 +24,15 @@ import {
   ExternalLink
 } from "lucide-react";
 
+import { useLanguage } from "@/lib/i18n";
+
 type PageProps = {
   params: Promise<{ id: string }>;
 };
 
 export default function PromiseDetailPageClient({ params }: PageProps) {
   const { id } = use(params);
+  const { lang, t } = useLanguage();
   
   const [promise, setPromise] = useState<PromiseItem | null>(null);
   const [updates, setUpdates] = useState<UpdateItem[]>([]);
@@ -249,10 +252,10 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
     return (
       <div className="p-12 text-center rounded-2xl border border-slate-900 bg-slate-950/20 max-w-lg mx-auto space-y-4">
         <AlertCircle className="w-10 h-10 text-rose-500 mx-auto" />
-        <h3 className="text-sm font-bold text-white uppercase tracking-wider">Promise Not Found</h3>
-        <p className="text-xs text-slate-500">The requested manifesto ID does not match any pre-seeded record.</p>
+        <h3 className="text-sm font-bold text-white uppercase tracking-wider">{lang === "en" ? "Promise Not Found" : "திட்டம் கண்டறியப்படவில்லை"}</h3>
+        <p className="text-xs text-slate-500">{lang === "en" ? "The requested manifesto ID does not match any pre-seeded record." : "கோரப்பட்ட திட்ட அடையாள எண் எந்தவொரு பதிவிற்கும் பொருந்தவில்லை."}</p>
         <Link href="/" className="inline-block text-xs font-bold text-blue-400 hover:underline">
-          Return to Dashboard
+          {lang === "en" ? "Return to Dashboard" : "முகப்பிற்குத் திரும்பு"}
         </Link>
       </div>
     );
@@ -260,7 +263,7 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
 
   const budgetCrores = promise.budget_amount 
     ? `₹${(promise.budget_amount / 10000000).toFixed(1)} Crores` 
-    : "Awaiting Budget Allocation";
+    : t.awaitingBudget;
 
   return (
     <div className="space-y-8 animate-fade-in pb-12">
@@ -268,7 +271,7 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
       <div>
         <Link href="/" className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors">
           <ChevronLeft className="w-4 h-4" />
-          <span>Back to Governance Dashboard</span>
+          <span>{t.backToDashboard}</span>
         </Link>
       </div>
 
@@ -277,9 +280,11 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
         <div className="p-4 rounded-2xl border border-amber-500/20 bg-amber-500/10 text-amber-800 dark:text-amber-400 flex items-start gap-3 shadow-[0_0_15px_rgba(245,158,11,0.05)]">
           <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
           <div className="space-y-1">
-            <p className="text-xs font-bold uppercase tracking-wider">Example Showcase Card</p>
+            <p className="text-xs font-bold uppercase tracking-wider">{t.exampleCard}</p>
             <p className="text-[11px] leading-relaxed text-amber-800/80 dark:text-amber-400/80 font-medium">
-              This card is a pre-seeded demonstration example showing NammaArasu's interactive progress timeline, official gazette log entries, citizen-uploaded proof verification, and public discussion feeds.
+              {lang === "en" 
+                ? "This card is a pre-seeded demonstration example showing NammaArasu's interactive progress timeline, official gazette log entries, citizen-uploaded proof verification, and public discussion feeds."
+                : "இந்த அட்டை நம்ம அரசின் ஊடாடும் முன்னேற்ற காலவரிசை, பொதுமக்கள் சமர்ப்பித்த ஆதாரங்களின் சரிபார்ப்பு மற்றும் பொது விவாதங்களின் விளக்க உதாரணம் ஆகும்."}
             </p>
           </div>
         </div>
@@ -296,7 +301,10 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
                 ? "bg-cyan-500/10 text-cyan-800 dark:text-cyan-400 border-cyan-500/20"
                 : "bg-purple-500/10 text-purple-800 dark:text-purple-400 border-purple-500/20"
             }`}>
-              {promise.framework} Framework • {promise.pillar}
+              {lang === "en" 
+                ? `${promise.framework} Framework` 
+                : `${promise.framework === "Aram" ? "அறம்" : promise.framework === "Porul" ? "பொருள்" : "இன்பம்"} அமைப்பு`
+              } • {promise.pillar}
             </span>
 
             <div className="flex items-center gap-2">
@@ -316,7 +324,7 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
                   const promiseNum = idMatch[4];
                   return (
                     <>
-                      Commitment #{promiseNum} • {promise.pillar} • {promise.framework} Framework
+                      {lang === "en" ? `Commitment #${promiseNum}` : `வாக்குறுதி #${promiseNum}`} • {promise.pillar} • {lang === "en" ? `${promise.framework} Framework` : `${promise.framework === "Aram" ? "அறம்" : promise.framework === "Porul" ? "பொருள்" : "இன்பம்"} அமைப்பு`}
                     </>
                   );
                 }
@@ -328,7 +336,7 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
           {/* Progress Section */}
           <div className="pt-4 border-t border-border space-y-2.5">
             <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
-              <span>Audited Completion Progress</span>
+              <span>{t.auditedCompletionProgress}</span>
               <span className="text-foreground font-mono">{promise.progress_percentage}%</span>
             </div>
             
@@ -340,7 +348,7 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                     className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-foreground bg-background hover:bg-muted border border-border rounded-xl transition-all shadow-sm cursor-pointer"
                   >
-                    <span>Change Governance Status</span>
+                    <span>{t.changeGovernanceStatus}</span>
                     <span className="text-[10px] bg-blue-500/10 text-blue-500 border border-blue-500/20 px-2 py-0.5 rounded-lg font-bold uppercase tracking-wider">
                       {promise.status}
                     </span>
@@ -520,7 +528,7 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
           <div className="p-5 rounded-2xl border border-border bg-card space-y-6 shadow-sm">
             <div className="flex items-center gap-2 pb-3.5 border-b border-border">
               <Clock className="w-4 h-4 text-purple-500" />
-              <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">Implementation Timeline</h3>
+              <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">{t.implementationTimeline}</h3>
             </div>
 
             {/* Admin Add Timeline Log */}
@@ -528,7 +536,7 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
               <form onSubmit={handleAddUpdate} className="p-4 rounded-xl border border-border bg-muted/20 space-y-3.5">
                 <p className="text-[10px] font-bold text-amber-500 uppercase flex items-center gap-1">
                   <Activity className="w-3.5 h-3.5" />
-                  <span>Post Official Progress Entry</span>
+                  <span>{t.postOfficialProgressEntry}</span>
                 </p>
                 
                 <div className="space-y-3">
@@ -537,7 +545,7 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
                     required
                     value={newUpdateTitle}
                     onChange={(e) => setNewUpdateTitle(e.target.value)}
-                    placeholder="Log title (e.g. 'Site Inspection Completed')"
+                    placeholder={t.logTitlePlaceholder}
                     className="w-full bg-background border border-border focus:border-primary text-xs px-3.5 py-2 rounded-lg text-foreground outline-none"
                   />
                   <textarea
@@ -545,11 +553,11 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
                     rows={2}
                     value={newUpdateDesc}
                     onChange={(e) => setNewUpdateDesc(e.target.value)}
-                    placeholder="Provide full official details or outcomes achieved..."
+                    placeholder={t.logDescriptionPlaceholder}
                     className="w-full bg-background border border-border focus:border-primary text-xs p-3 rounded-lg text-foreground outline-none resize-none"
                   />
                   <button type="submit" className="px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors cursor-pointer">
-                    Post Log Entry
+                    {t.postLogEntry}
                   </button>
                 </div>
               </form>
@@ -569,7 +577,7 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="text-xs font-bold text-foreground">{up.title}</p>
                         <span className="text-[9px] font-medium text-muted-foreground">
-                          {new Date(up.created_at).toLocaleDateString()}
+                          {new Date(up.created_at).toLocaleDateString(lang === "en" ? "en-US" : "ta-IN")}
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground leading-relaxed">
@@ -577,14 +585,14 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
                       </p>
                       <p className="text-[9px] text-muted-foreground font-semibold uppercase flex items-center gap-1 pt-0.5">
                         <ShieldCheck className="w-3 h-3 text-emerald-500" />
-                        <span>Source: {up.created_by}</span>
+                        <span>{lang === "en" ? "Source:" : "மூலம்:"} {up.created_by}</span>
                       </p>
                     </div>
                   </div>
                 ))
               ) : (
                 <div className="text-muted-foreground text-xs py-4 pl-2 font-medium">
-                  No implementation timeline recorded yet.
+                  {t.noTimelineRecorded}
                 </div>
               )}
             </div>
@@ -594,13 +602,13 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
           <div className="p-5 rounded-2xl border border-border bg-card space-y-6 shadow-sm">
             <div className="flex items-center gap-2 pb-3.5 border-b border-border">
               <Upload className="w-4 h-4 text-emerald-500" />
-              <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">Citizen Evidence Hub</h3>
+              <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">{lang === "en" ? "Citizen Evidence Hub" : "பொதுமக்கள் ஆதார மையம்"}</h3>
             </div>
 
             {/* Evidence form */}
             <form onSubmit={handleAddEvidence} className="p-4 rounded-xl border border-border bg-muted/20 space-y-3.5">
               <p className="text-[10px] font-bold text-muted-foreground uppercase">
-                Submit Implementation Proof or Report Bottlenecks
+                {lang === "en" ? "Submit Implementation Proof or Report Bottlenecks" : "அமலாக்க ஆதாரங்கள் அல்லது தடைகளைச் சமர்ப்பிக்கவும்"}
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -609,9 +617,9 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
                   onChange={(e) => setEvidenceType(e.target.value as any)}
                   className="bg-background border border-border text-xs p-2 rounded-lg text-foreground cursor-pointer outline-none"
                 >
-                  <option value="image">Image (Photo)</option>
-                  <option value="document">Document (PDF/Report)</option>
-                  <option value="video">Video</option>
+                  <option value="image">{lang === "en" ? "Image (Photo)" : "படம் (புகைப்படம்)"}</option>
+                  <option value="document">{lang === "en" ? "Document (PDF/Report)" : "ஆவணம் (PDF/அறிக்கை)"}</option>
+                  <option value="video">{lang === "en" ? "Video" : "காணொளி"}</option>
                 </select>
 
                 <input
@@ -619,7 +627,7 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
                   required
                   value={evidenceUrl}
                   onChange={(e) => setEvidenceUrl(e.target.value)}
-                  placeholder="Paste direct file URL (image path)..."
+                  placeholder={lang === "en" ? "Paste direct file URL (image path)..." : "நேரடி கோப்பு முகவரியை (URL) ஒட்டவும்..."}
                   className="md:col-span-2 bg-background border border-border text-xs px-3.5 py-2 rounded-lg text-foreground outline-none"
                 />
               </div>
@@ -629,7 +637,7 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
                   type="text"
                   value={evidenceDistrict}
                   onChange={(e) => setEvidenceDistrict(e.target.value)}
-                  placeholder="Affected District (e.g. Madurai)..."
+                  placeholder={lang === "en" ? "Affected District (e.g. Madurai)..." : "பாதிக்கப்பட்ட மாவட்டம் (எ.கா. மதுரை)..."}
                   className="bg-background border border-border text-xs px-3.5 py-2 rounded-lg text-foreground outline-none"
                 />
 
@@ -638,14 +646,14 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
                   required
                   value={evidenceDesc}
                   onChange={(e) => setEvidenceDesc(e.target.value)}
-                  placeholder="Evidence Description / Observations..."
+                  placeholder={lang === "en" ? "Evidence Description / Observations..." : "ஆதாரத்தின் விவரம் / அவதானிப்புகள்..."}
                   className="md:col-span-3 bg-background border border-border text-xs px-3.5 py-2 rounded-lg text-foreground outline-none"
                 />
               </div>
 
               <button type="submit" className="px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg transition-colors flex items-center gap-1.5 shadow-[0_0_15px_rgba(16,185,129,0.1)] cursor-pointer">
                 <Upload className="w-3.5 h-3.5" />
-                <span>Submit Proof</span>
+                <span>{lang === "en" ? "Submit Proof" : "ஆதாரத்தைச் சமர்ப்பி"}</span>
               </button>
             </form>
 
@@ -674,7 +682,7 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
                     <div>
                       <div className="flex items-center justify-between gap-2 pb-1.5 border-b border-border mb-2">
                         <span className="text-[9px] font-bold text-muted-foreground uppercase">
-                          {ev.type} • {ev.district || "Statewide"}
+                          {ev.type} • {ev.district || (lang === "en" ? "Statewide" : "மாநிலம் தழுவியது")}
                         </span>
                         <span className="text-[9px] font-bold text-teal-600 dark:text-teal-400 uppercase bg-teal-500/10 px-1.5 py-0.5 rounded border border-teal-500/20">
                           {ev.verification_status}
@@ -684,14 +692,14 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
                         &ldquo;{ev.description}&rdquo;
                       </p>
                       <span className="text-[9px] text-muted-foreground font-medium block mt-2">
-                        Submitted on {new Date(ev.created_at).toLocaleDateString()}
+                        {lang === "en" ? "Submitted on" : "சமர்ப்பிக்கப்பட்ட நாள்"} {new Date(ev.created_at).toLocaleDateString(lang === "en" ? "en-US" : "ta-IN")}
                       </span>
                     </div>
                   </div>
                 ))
               ) : (
                 <div className="col-span-2 text-center text-muted-foreground text-xs py-4 font-medium">
-                  No citizen-uploaded evidence available yet. Be the first to upload.
+                  {lang === "en" ? "No citizen-uploaded evidence available yet. Be the first to upload." : "இன்னும் பொதுமக்கள் ஆதாரங்கள் எதுவும் சமர்ப்பிக்கப்படவில்லை. முதன்முதலாகப் பகிருங்கள்."}
                 </div>
               )}
             </div>
@@ -701,13 +709,13 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
           <div className="p-5 rounded-2xl border border-border bg-card space-y-6 shadow-sm">
             <div className="flex items-center gap-2 pb-3.5 border-b border-border">
               <MessageSquare className="w-4 h-4 text-blue-500" />
-              <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">Public Accountability Discussion</h3>
+              <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">{lang === "en" ? "Public Accountability Discussion" : "பொதுமக்கள் விவாத அரங்கம்"}</h3>
             </div>
 
             {/* Comment Form */}
             <form onSubmit={handleAddComment} className="p-4 rounded-xl border border-border bg-muted/20 space-y-3">
               <p className="text-[10px] font-bold text-muted-foreground uppercase">
-                Join the conversation
+                {lang === "en" ? "Join the conversation" : "உரையாடலில் இணையுங்கள்"}
               </p>
               
               <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
@@ -715,7 +723,7 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
                   type="text"
                   value={commentAuthor}
                   onChange={(e) => setCommentAuthor(e.target.value)}
-                  placeholder="Your Name (or Anonymous)..."
+                  placeholder={lang === "en" ? "Your Name (or Anonymous)..." : "உங்கள் பெயர் (அல்லது பெயர் குறிப்பிடாமல்)..."}
                   className="bg-background border border-border text-xs px-3.5 py-2.5 rounded-xl text-foreground outline-none"
                 />
                 
@@ -724,13 +732,13 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
                   required
                   value={commentContent}
                   onChange={(e) => setCommentContent(e.target.value)}
-                  placeholder="Post citizen feedback, inquiries, or complaints..."
+                  placeholder={lang === "en" ? "Post citizen feedback, inquiries, or complaints..." : "கருத்துக்கள், விசாரணைகள் அல்லது புகார்களைப் பதிவுசெய்யவும்..."}
                   className="md:col-span-3 bg-background border border-border text-xs px-3.5 py-2.5 rounded-xl text-foreground outline-none"
                 />
               </div>
 
               <button type="submit" className="px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors cursor-pointer">
-                Post Comment
+                {lang === "en" ? "Post Comment" : "கருத்தைப் பதிவுசெய்"}
               </button>
             </form>
 
@@ -746,7 +754,7 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
                       <div className="flex items-center gap-2">
                         <p className="text-xs font-bold text-foreground">{comm.author}</p>
                         <span className="text-[9px] text-muted-foreground font-medium">
-                          {new Date(comm.created_at).toLocaleDateString()}
+                          {new Date(comm.created_at).toLocaleDateString(lang === "en" ? "en-US" : "ta-IN")}
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground leading-relaxed">
@@ -757,7 +765,7 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
                 ))
               ) : (
                 <div className="text-muted-foreground text-xs py-2 font-medium">
-                  No public comments posted yet.
+                  {lang === "en" ? "No public comments posted yet." : "இன்னும் கருத்துக்கள் எதுவும் பதிவு செய்யப்படவில்லை."}
                 </div>
               )}
             </div>
@@ -769,7 +777,7 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
         <div className="lg:col-span-4 lg:sticky lg:top-[90px] space-y-6">
           <div className="p-5 rounded-2xl border border-border bg-card space-y-5 shadow-sm">
             <h3 className="text-xs font-bold text-foreground uppercase tracking-wider pb-3 border-b border-border">
-              Governance parameters
+              {t.governanceParameters}
             </h3>
 
             {/* Budget */}
@@ -780,12 +788,12 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
               <div className="space-y-1">
                 {promise.manifesto_quoted_figure && (
                   <div>
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">Manifesto Quoted Figure</p>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">{lang === "en" ? "Manifesto Quoted Figure" : "தேர்தல் அறிக்கையில் குறிப்பிட்ட தொகை"}</p>
                     <p className="text-xs font-bold text-amber-600 dark:text-amber-400">{promise.manifesto_quoted_figure}</p>
                   </div>
                 )}
                 <div>
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">Approved Budget</p>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">{t.approvedBudget}</p>
                   <p className="text-xs font-bold text-foreground">{budgetCrores}</p>
                 </div>
               </div>
@@ -797,9 +805,9 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
                 <Calendar className="w-4 h-4" />
               </div>
               <div>
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">Target Deadline</p>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">{t.targetDeadline}</p>
                 <p className="text-xs font-bold text-foreground">
-                  {promise.target_date ? new Date(promise.target_date).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "Unspecified"}
+                  {promise.target_date ? new Date(promise.target_date).toLocaleDateString(lang === "en" ? "en-US" : "ta-IN", { year: "numeric", month: "short", day: "numeric" }) : (lang === "en" ? "Unspecified" : "குறிப்பிடப்படவில்லை")}
                 </p>
               </div>
             </div>
@@ -810,7 +818,7 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
                 <Building className="w-4 h-4" />
               </div>
               <div className="flex-1">
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">Responsible Departments</p>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">{t.responsibleDepartments}</p>
                 <div className="flex flex-wrap gap-1 mt-1">
                   {promise.departments && promise.departments.length > 0 ? (
                     promise.departments.map((dept) => (
@@ -819,7 +827,7 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
                       </span>
                     ))
                   ) : (
-                    <span className="text-[10px] text-muted-foreground">Unassigned</span>
+                    <span className="text-[10px] text-muted-foreground">{t.unassigned}</span>
                   )}
                 </div>
               </div>
@@ -831,7 +839,7 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
                 <MapPin className="w-4 h-4" />
               </div>
               <div className="flex-1">
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">Affected Regions</p>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">{t.affectedRegions}</p>
                 <div className="flex flex-wrap gap-1 mt-1 max-h-36 overflow-y-auto">
                   {promise.districts && promise.districts.length > 0 ? (
                     promise.districts.map((dist) => (
@@ -840,7 +848,7 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
                       </span>
                     ))
                   ) : (
-                    <span className="text-[10px] text-muted-foreground">Statewide</span>
+                    <span className="text-[10px] text-muted-foreground">{lang === "en" ? "Statewide" : "மாநிலம் தழுவியது"}</span>
                   )}
                 </div>
               </div>
@@ -852,9 +860,9 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
                 <Layers className="w-4 h-4" />
               </div>
               <div className="space-y-1.5">
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">Manifesto Mapping</p>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">{t.manifestoMapping}</p>
                 <p className="text-xs font-bold text-foreground leading-relaxed">
-                  Section: {promise.section}
+                  {t.section}: {promise.section}
                 </p>
                 {promise.id !== "p0-tvk-journey" && promise.framework && (
                   <a
@@ -864,7 +872,7 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
                     className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-500 hover:text-blue-400 transition-colors mt-1"
                   >
                     <ExternalLink className="w-3 h-3" />
-                    <span>View Original Manifesto PDF</span>
+                    <span>{t.viewOriginalPdf}</span>
                   </a>
                 )}
               </div>

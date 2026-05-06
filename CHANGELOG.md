@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-05-06
+
+### Added
+- **Bilingual i18n system** (`en`/`ta`) with a centralized `useLanguage` hook and translation dictionary (`src/lib/i18n.ts`).
+- Tamil (தமிழ்) translations across all core UI surfaces: Sidebar navigation, Header, Dashboard metrics & filters, Kanban Board columns & controls, Districts Atlas, Manifesto Library, and Promise Detail pages.
+- Language toggle button in the Header with persistent `localStorage` preference.
+- **SEO foundations**: `robots.ts` (dynamic robots.txt), `sitemap.ts` (auto-generates sitemap.xml from all promise routes), and enhanced `<head>` metadata with Open Graph & Twitter Card tags.
+- Searchable Section dropdown with inline search input and click-outside dismiss.
+- Dynamic **Framework ↔ Section cross-filter synchronization**: selecting a Section auto-updates Framework; changing Framework resets Section to show only relevant options.
+- "Linked" badge indicator on the Section filter label to communicate the cross-filter relationship.
+
+### Changed
+- Redesigned the **Faceted Manifesto Filters** panel for visual coherence: flat 12-column grid layout with consistent label positioning, uniform `h-[38px]` input heights, and identical `<ChevronDown>` icons across all selects.
+- Removed the nested "Manifesto Scope" card that broke visual rhythm with the surrounding filters.
+- Standardized all `<select>` elements to use `appearance-none` with an absolutely-positioned Lucide `ChevronDown` icon instead of mixed inline SVG backgrounds.
+- Cleaned up `<option>` labels to show only the translated term (removed redundant dual-language patterns like `Announced (Announced)`).
+- All filter labels now use identical typography: `text-[10px] font-bold uppercase tracking-wider`.
+
 ## [0.4.0] - 2026-05-06
 
 ### Added

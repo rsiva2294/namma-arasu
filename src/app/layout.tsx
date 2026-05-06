@@ -15,8 +15,49 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "NammaArasu - Civic Governance Operating System",
-  description: "A production-grade public accountability and manifesto tracking platform inspired by JIRA, GitHub Projects, and modern transparency boards.",
+  title: "NammaArasu – Tamil Nadu Civic Governance & Manifesto Tracker",
+  description: "An open-source, public accountability and manifesto tracking platform for Tamil Nadu. Audit policy progress, localized district investments, and citizen evidence logs.",
+  keywords: [
+    "NammaArasu",
+    "Tamil Nadu",
+    "Manifesto Tracker",
+    "Civic Tech",
+    "TVK Manifesto",
+    "Governance Tracker",
+    "Aram Porul Inbam",
+    "Public Accountability",
+    "Open Source India",
+    "Citizen Auditing"
+  ],
+  authors: [{ name: "NammaArasu Contributors" }],
+  creator: "NammaArasu",
+  publisher: "NammaArasu",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  openGraph: {
+    title: "NammaArasu – Tamil Nadu Civic Governance & Manifesto Tracker",
+    description: "Monitor localized investments, track manifesto commitments, and audit civic progress across Tamil Nadu with 100% transparency.",
+    url: "https://namma-arasu.web.app",
+    siteName: "NammaArasu",
+    locale: "en_IN",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "NammaArasu – Tamil Nadu Civic Governance & Manifesto Tracker",
+    description: "Bringing JIRA-style accountability to public policy manifestos in Tamil Nadu. 100% open-source.",
+    creator: "@NammaArasu",
+  },
+  category: "technology",
 };
 
 export default function RootLayout({

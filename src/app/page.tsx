@@ -6,6 +6,7 @@ import { promiseService } from "@/lib/db";
 import { PromiseItem, FrameworkType, PromiseStatus, PromisePriority } from "@/types";
 import StatusBadge from "@/components/StatusBadge";
 import PriorityBadge from "@/components/PriorityBadge";
+import { useLanguage } from "@/lib/i18n";
 import { 
   Search, 
   Filter, 
@@ -20,7 +21,8 @@ import {
   Sparkles,
   Clock,
   Award,
-  ArrowRight
+  ArrowRight,
+  ChevronDown
 } from "lucide-react";
 import { 
   BarChart, 
@@ -35,6 +37,7 @@ import {
 } from "recharts";
 
 export default function Dashboard() {
+  const { lang, t } = useLanguage();
   const [promises, setPromises] = useState<PromiseItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   
@@ -44,6 +47,9 @@ export default function Dashboard() {
   const [selectedStatus, setSelectedStatus] = useState<PromiseStatus | "All">("All");
   const [selectedPriority, setSelectedPriority] = useState<PromisePriority | "All">("All");
   const [selectedSection, setSelectedSection] = useState<string>("All");
+
+  const [isSectionDropdownOpen, setIsSectionDropdownOpen] = useState<boolean>(false);
+  const [sectionSearch, setSectionSearch] = useState<string>("");
 
   // Mobile drawer collapsing states
   const [showAnalytics, setShowAnalytics] = useState<boolean>(false);
@@ -63,6 +69,17 @@ export default function Dashboard() {
     return () => window.removeEventListener("namma_arasu_role_change", loadData);
   }, []);
 
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      const container = document.getElementById("section-select-container");
+      if (container && !container.contains(e.target as Node)) {
+        setIsSectionDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
+
   // Compute stats
   const totalCount = promises.length;
   const completedCount = promises.filter((p) => p.status === "Completed").length;
@@ -75,7 +92,12 @@ export default function Dashboard() {
 
   // Dynamic unique sections list
   const uniqueSections = Array.from(
-    new Set(promises.map((p) => p.section).filter(Boolean))
+    new Set(
+      promises
+        .filter((p) => selectedFramework === "All" || p.framework === selectedFramework)
+        .map((p) => p.section)
+        .filter(Boolean)
+    )
   ).sort() as string[];
 
   // Filtered data
@@ -121,12 +143,28 @@ export default function Dashboard() {
     });
   };
 
+  const handleFrameworkChange = (fw: FrameworkType | "All") => {
+    setSelectedFramework(fw);
+    setSelectedSection("All");
+  };
+
+  const handleSectionChange = (section: string) => {
+    setSelectedSection(section);
+    if (section !== "All") {
+      const match = promises.find((p) => p.section === section);
+      if (match) {
+        setSelectedFramework(match.framework);
+      }
+    }
+  };
+
   const clearFilters = () => {
     setSearchQuery("");
     setSelectedFramework("All");
     setSelectedStatus("All");
     setSelectedPriority("All");
     setSelectedSection("All");
+    setSectionSearch("");
   };
 
   if (loading) {
@@ -346,10 +384,10 @@ export default function Dashboard() {
           >
             <div className="flex items-center gap-2">
               <Filter className="w-4 h-4 text-blue-500" />
-              <h3 className="text-sm font-bold text-foreground uppercase tracking-wide">Faceted Manifesto Filters</h3>
+              <h3 className="text-sm font-bold text-foreground uppercase tracking-wide">{lang === "en" ? "Faceted Manifesto Filters" : "அதிநவீன வடிகட்டிகள்"}</h3>
             </div>
             <span className="md:hidden text-[9px] text-muted-foreground font-bold px-2 py-0.5 bg-muted rounded">
-              {showFilters ? "COLLAPSE" : "EXPAND"}
+              {showFilters ? (lang === "en" ? "COLLAPSE" : "மறை") : (lang === "en" ? "EXPAND" : "காட்டு")}
             </span>
           </button>
           {(searchQuery || selectedFramework !== "All" || selectedStatus !== "All" || selectedPriority !== "All" || selectedSection !== "All") && (
@@ -357,78 +395,163 @@ export default function Dashboard() {
               onClick={clearFilters}
               className="text-xs font-semibold text-blue-500 hover:text-blue-400 transition-colors self-start md:self-auto cursor-pointer"
             >
-              Reset All Filters
+              {t.clearFilters}
             </button>
           )}
         </div>
 
-        <div className={`${showFilters ? "grid" : "hidden md:grid"} grid-cols-1 md:grid-cols-5 gap-4`}>
+        <div className={`${showFilters ? "grid" : "hidden md:grid"} grid-cols-1 md:grid-cols-12 gap-4 items-end`}>
           {/* Search Box */}
-          <div className="relative">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by title, keyword, tags..."
-              className="w-full bg-background border border-border focus:border-primary text-xs px-10 py-2.5 rounded-xl text-foreground outline-none focus:ring-1 focus:ring-blue-500/50 transition-all"
-            />
+          <div className="md:col-span-3 space-y-1.5">
+            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+              {lang === "en" ? "Keyword Search" : "சொல் தேடல்"}
+            </label>
+            <div className="relative">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={t.searchPlaceholder}
+                className="w-full bg-background border border-border focus:border-primary text-xs px-10 py-2.5 rounded-xl text-foreground outline-none focus:ring-1 focus:ring-blue-500/50 transition-all h-[38px]"
+              />
+            </div>
           </div>
 
           {/* Framework Selector */}
-          <select
-            value={selectedFramework}
-            onChange={(e) => setSelectedFramework(e.target.value as FrameworkType | "All")}
-            className="w-full bg-background border border-border focus:border-primary text-xs px-3.5 py-2.5 rounded-xl text-foreground outline-none focus:ring-1 focus:ring-blue-500/50 transition-all cursor-pointer"
-          >
-            <option value="All">All Frameworks</option>
-            <option value="Aram">Aram (Ethics)</option>
-            <option value="Porul">Porul (Wealth)</option>
-            <option value="Inbam">Inbam (Happiness)</option>
-          </select>
+          <div className="md:col-span-2 space-y-1.5">
+            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+              {lang === "en" ? "Framework" : "அமைப்பு"}
+            </label>
+            <div className="relative">
+              <select
+                value={selectedFramework}
+                onChange={(e) => handleFrameworkChange(e.target.value as FrameworkType | "All")}
+                className="w-full bg-background border border-border focus:border-primary text-xs pl-3.5 pr-10 py-2.5 rounded-xl text-foreground outline-none focus:ring-1 focus:ring-blue-500/50 transition-all cursor-pointer h-[38px] appearance-none"
+              >
+                <option value="All">{t.allFrameworks}</option>
+                <option value="Aram">{lang === "en" ? "Aram" : "அறம்"}</option>
+                <option value="Porul">{lang === "en" ? "Porul" : "பொருள்"}</option>
+                <option value="Inbam">{lang === "en" ? "Inbam" : "இன்பம்"}</option>
+              </select>
+              <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+            </div>
+          </div>
 
           {/* Section Selector */}
-          <select
-            value={selectedSection}
-            onChange={(e) => setSelectedSection(e.target.value)}
-            className="w-full bg-background border border-border focus:border-primary text-xs px-3.5 py-2.5 rounded-xl text-foreground outline-none focus:ring-1 focus:ring-blue-500/50 transition-all cursor-pointer"
-          >
-            <option value="All">All Sections</option>
-            {uniqueSections.map((sec) => (
-              <option key={sec} value={sec}>
-                {sec}
-              </option>
-            ))}
-          </select>
+          <div className="md:col-span-3 space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+                {lang === "en" ? "Section" : "பிரிவு"}
+              </label>
+              <span className="text-[8px] bg-blue-500/10 text-blue-500 font-extrabold uppercase tracking-widest px-1.5 py-0.2 rounded scale-90 origin-right">
+                {lang === "en" ? "Linked" : "இணைப்பு"}
+              </span>
+            </div>
+            <div className="relative" id="section-select-container">
+              <button
+                type="button"
+                onClick={() => setIsSectionDropdownOpen(!isSectionDropdownOpen)}
+                className="w-full bg-background border border-border focus:border-primary text-xs pl-3.5 pr-10 py-2.5 rounded-xl text-foreground text-left flex items-center justify-between transition-all cursor-pointer select-none h-[38px]"
+              >
+                <span className="truncate pr-2">
+                  {selectedSection === "All" ? t.allSections : selectedSection}
+                </span>
+                <ChevronDown className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+              </button>
+
+              {isSectionDropdownOpen && (
+                <div className="absolute z-30 mt-1 w-full bg-card border border-border rounded-xl shadow-xl p-2 space-y-2 max-h-60 overflow-hidden flex flex-col">
+                  <input
+                    type="text"
+                    value={sectionSearch}
+                    onChange={(e) => setSectionSearch(e.target.value)}
+                    placeholder={lang === "en" ? "Search section..." : "பிரிவைத் தேடுக..."}
+                    className="w-full bg-background border border-border text-[11px] px-3 py-1.5 rounded-lg text-foreground outline-none focus:border-primary"
+                    autoFocus
+                  />
+                  <div className="overflow-y-auto flex-1 space-y-0.5 max-h-40">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleSectionChange("All");
+                        setIsSectionDropdownOpen(false);
+                        setSectionSearch("");
+                      }}
+                      className={`w-full text-left text-xs px-3 py-1.5 rounded-lg transition-colors hover:bg-muted/10 cursor-pointer ${
+                        selectedSection === "All" ? "bg-blue-500/10 text-blue-500 font-bold" : "text-foreground"
+                      }`}
+                    >
+                      {t.allSections}
+                    </button>
+                    {uniqueSections
+                      .filter(sec => sec.toLowerCase().includes(sectionSearch.toLowerCase()))
+                      .map((sec) => (
+                        <button
+                          key={sec}
+                          type="button"
+                          onClick={() => {
+                            handleSectionChange(sec);
+                            setIsSectionDropdownOpen(false);
+                            setSectionSearch("");
+                          }}
+                          className={`w-full text-left text-xs px-3 py-1.5 rounded-lg transition-colors hover:bg-muted/10 cursor-pointer ${
+                            selectedSection === sec ? "bg-blue-500/10 text-blue-500 font-bold" : "text-foreground"
+                          }`}
+                        >
+                          {sec}
+                        </button>
+                      ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
 
           {/* Status Selector */}
-          <select
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value as PromiseStatus | "All")}
-            className="w-full bg-background border border-border focus:border-primary text-xs px-3.5 py-2.5 rounded-xl text-foreground outline-none focus:ring-1 focus:ring-blue-500/50 transition-all cursor-pointer"
-          >
-            <option value="All">All Statuses</option>
-            <option value="Announced">Announced</option>
-            <option value="Planned">Planned</option>
-            <option value="Budget Allocated">Budget Allocated</option>
-            <option value="In Progress">In Progress</option>
-            <option value="Delayed">Delayed</option>
-            <option value="Blocked">Blocked</option>
-            <option value="Completed">Completed</option>
-          </select>
+          <div className="md:col-span-2 space-y-1.5">
+            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+              {lang === "en" ? "Implementation Status" : "அமலாக்க நிலை"}
+            </label>
+            <div className="relative">
+              <select
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value as PromiseStatus | "All")}
+                className="w-full bg-background border border-border focus:border-primary text-xs pl-3.5 pr-10 py-2.5 rounded-xl text-foreground outline-none focus:ring-1 focus:ring-blue-500/50 transition-all cursor-pointer h-[38px] appearance-none"
+              >
+                <option value="All">{t.allStatuses}</option>
+                <option value="Announced">{lang === "en" ? "Announced" : "அறிவிக்கப்பட்டது"}</option>
+                <option value="Planned">{lang === "en" ? "Planned" : "திட்டமிடப்பட்டது"}</option>
+                <option value="Budget Allocated">{lang === "en" ? "Budget Allocated" : "பட்ஜெட் ஒதுக்கப்பட்டது"}</option>
+                <option value="In Progress">{lang === "en" ? "In Progress" : "செயல்பாட்டில்"}</option>
+                <option value="Delayed">{lang === "en" ? "Delayed" : "தாமதமானது"}</option>
+                <option value="Blocked">{lang === "en" ? "Blocked" : "முடக்கப்பட்டது"}</option>
+                <option value="Completed">{lang === "en" ? "Completed" : "முடிந்தது"}</option>
+              </select>
+              <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+            </div>
+          </div>
 
           {/* Priority Selector */}
-          <select
-            value={selectedPriority}
-            onChange={(e) => setSelectedPriority(e.target.value as PromisePriority | "All")}
-            className="w-full bg-background border border-border focus:border-primary text-xs px-3.5 py-2.5 rounded-xl text-foreground outline-none focus:ring-1 focus:ring-blue-500/50 transition-all cursor-pointer"
-          >
-            <option value="All">All Priorities</option>
-            <option value="Low">Low</option>
-            <option value="Medium">Medium</option>
-            <option value="High">High</option>
-            <option value="Critical">Critical</option>
-          </select>
+          <div className="md:col-span-2 space-y-1.5">
+            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+              {lang === "en" ? "Policy Priority" : "முன்னுரிமை"}
+            </label>
+            <div className="relative">
+              <select
+                value={selectedPriority}
+                onChange={(e) => setSelectedPriority(e.target.value as PromisePriority | "All")}
+                className="w-full bg-background border border-border focus:border-primary text-xs pl-3.5 pr-10 py-2.5 rounded-xl text-foreground outline-none focus:ring-1 focus:ring-blue-500/50 transition-all cursor-pointer h-[38px] appearance-none"
+              >
+                <option value="All">{t.allPriorities}</option>
+                <option value="Low">{lang === "en" ? "Low" : "குறைந்த"}</option>
+                <option value="Medium">{lang === "en" ? "Medium" : "நடுத்தர"}</option>
+                <option value="High">{lang === "en" ? "High" : "அதிக"}</option>
+                <option value="Critical">{lang === "en" ? "Critical" : "மிக முக்கியம்"}</option>
+              </select>
+              <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+            </div>
+          </div>
         </div>
       </div>
 
