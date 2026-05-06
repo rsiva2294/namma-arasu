@@ -1,26 +1,125 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #090b0f;
+  --foreground: #f1f5f9;
+  --card: #11151d;
+  --card-foreground: #f8fafc;
+  --popover: #11151d;
+  --popover-foreground: #f8fafc;
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --secondary: #1e293b;
+  --secondary-foreground: #f1f5f9;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --accent: #1e293b;
+  --accent-foreground: #f1f5f9;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #1e293b;
+  --input: #1e293b;
+  --admin-bg: rgba(245, 158, 11, 0.2);
+  --admin-text: #fbbf24;
+  --admin-border: rgba(217, 119, 6, 0.4);
+}
+
+.light {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #f1f5f9;
+  --accent-foreground: #0f172a;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #2563eb;
+  
+  --admin-bg: rgba(245, 158, 11, 0.12);
+  --admin-text: #b45309;
+  --admin-border: rgba(245, 158, 11, 0.25);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --font-sans: var(--font-geist-sans), "Inter", "Outfit", sans-serif;
+  --font-mono: var(--font-geist-mono), monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Custom Reset & Scrollbar Styling */
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+/* Custom modern scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Design Utilities */
+.glass-panel {
+  background: rgba(17, 21, 29, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(30, 41, 59, 0.5);
+}
+
+.glass-card {
+  background: rgba(17, 21, 29, 0.8);
+  border: 1px solid rgba(30, 41, 59, 0.6);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  border-color: rgba(59, 130, 246, 0.3);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 1px 1px rgba(59, 130, 246, 0.1) inset;
+  transform: translateY(-2px);
+}
+
+.active-glow {
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
+}
+
+/* Custom animation timings */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
