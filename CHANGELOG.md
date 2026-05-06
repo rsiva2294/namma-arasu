@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-05-07
+
+### Added
+- **Multilingual AI Search Engine**: Implemented a 3-tier hybrid search architecture supporting sub-millisecond local keyword searches (Tier 1), Node runtime semantic vector similarity searches (Tier 2), and grounded structured AI synthesis (Tier 3).
+- **Bidirectional Synonym Dictionary**: Added `multilingual_dictionary.json` supporting symmetric translations across English, Tamil, and Tanglish.
+- **Pre-build Preprocessing Pipeline**: Created `build_manifesto_index.ts` to flatten manifesto frameworks, validate schemas, generate 3072-dimension vectors with Gemini embeddings API, and split client-side/server-side search indexes.
+- **Vector Store Cache Singleton**: Integrated server-side global memory caching service to bypass repeated disk reads and guarantee sub-millisecond similarity lookups.
+- **Anonymous Quota Manager**: Created `quotaService.ts` client-side service with local storage soft daily caps and optional Firebase syncing.
+- **Premium Search UI Box**: Integrated `<ManifestoAiSearchBox />` with debounced search entries, active quota indicators, and click-verifiable source citations.
+
 ## [0.5.0] - 2026-05-06
 
 ### Added

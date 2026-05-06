@@ -11,6 +11,7 @@ import {
   Layers
 } from "lucide-react";
 import { useLanguage } from "@/lib/i18n";
+import ManifestoAiSearchBox from "@/components/ManifestoAiSearchBox";
 
 const FRAMEWORK_DOCS = [
   {
@@ -111,6 +112,9 @@ export default function ManifestoPage() {
           </p>
         </div>
       </div>
+
+      {/* AI Manifesto Search Box */}
+      <ManifestoAiSearchBox />
 
       {/* Framework Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
