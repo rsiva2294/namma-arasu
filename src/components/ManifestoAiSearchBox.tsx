@@ -47,16 +47,6 @@ const TOKEN_WEIGHTS: Record<string, number> = {
   welfare: 1.0,
 };
 
-const getApiUrl = (path: string): string => {
-  if (typeof window !== "undefined") {
-    const hostname = window.location.hostname;
-    if (hostname === "localhost" || hostname === "127.0.0.1" || hostname.startsWith("192.168.")) {
-      return path;
-    }
-  }
-  return `https://namma-arasu--namma-arasu.asia-southeast1.hosted.app${path}`;
-};
-
 export default function ManifestoAiSearchBox() {
   const [query, setQuery] = useState("");
   const [isFocused, setIsFocused] = useState(false);
@@ -208,7 +198,7 @@ export default function ManifestoAiSearchBox() {
     setIsStaticHostingFallback(false);
 
     try {
-      const response = await fetch(getApiUrl("/api/manifesto-search/semantic-match"), {
+      const response = await fetch("/api/manifesto-search/semantic-match", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query }),
@@ -269,7 +259,7 @@ export default function ManifestoAiSearchBox() {
 
     try {
       const fingerprint = getUserFingerprint();
-      const response = await fetch(getApiUrl("/api/manifesto-search/synthesize"), {
+      const response = await fetch("/api/manifesto-search/synthesize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

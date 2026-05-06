@@ -161,7 +161,7 @@ ${
       console.log("\n⚠️ [GEMINI AI SYNTHESIS]: Usage metadata not returned by Gemini API.\n");
     }
 
-    const apiResponse = NextResponse.json({
+    return NextResponse.json({
       answer: synthesisResult.answer,
       citations: synthesisResult.citations,
       matchedPromises: synthesisResult.matchedPromises,
@@ -169,13 +169,9 @@ ${
       remainingQuota: quotaService.getRemainingQuota(cleanFingerprint),
       tokenUsage: usage || null,
     });
-    apiResponse.headers.set("Access-Control-Allow-Origin", "*");
-    apiResponse.headers.set("Access-Control-Allow-Methods", "POST, OPTIONS");
-    apiResponse.headers.set("Access-Control-Allow-Headers", "Content-Type");
-    return apiResponse;
   } catch (error: any) {
     console.error("AI synthesis exception:", error);
-    const errResponse = NextResponse.json(
+    return NextResponse.json(
       {
         error: "Failed to generate AI synthesis",
         message: error.message || "Unknown error",
@@ -186,15 +182,5 @@ ${
       },
       { status: 500 }
     );
-    errResponse.headers.set("Access-Control-Allow-Origin", "*");
-    return errResponse;
   }
-}
-
-export async function OPTIONS() {
-  const response = new Response(null, { status: 204 });
-  response.headers.set("Access-Control-Allow-Origin", "*");
-  response.headers.set("Access-Control-Allow-Methods", "POST, OPTIONS");
-  response.headers.set("Access-Control-Allow-Headers", "Content-Type");
-  return response;
 }
