@@ -10,7 +10,9 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepare": "husky"
+    "prepare": "husky",
+    "deploy:staging": "firebase use staging && npm run build && firebase deploy",
+    "deploy:production": "firebase use production && npm run build && firebase deploy"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.105.3",

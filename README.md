@@ -52,19 +52,35 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to explore N
 
 ---
 
-## ⚙️ Environment Variables
+## ⚙️ Environment & Multi-Site Configuration
 
 NammaArasu supports **Zero-Config Local Fallback Mode**. If no environment variables are defined, the application runs fully inside the browser's `localStorage` pre-seeded with the official Aram-Porul-Inbam framework documents.
 
-To configure live synchronization with a Cloud Firebase instance, create a `.env.local` file in the root directory (based on `.env.example`):
+### Environment Templates
 
-```env
-NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project_id.firebasestorage.app
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
-NEXT_PUBLIC_FIREBASE_APP_ID=1:your_app_id:web:your_web_id
+For live cloud-synced instances, NammaArasu maintains isolated databases and storage buckets for staging and production:
+- **Staging Instance**: Persists to `namma-arasu-staging`. Guided by [.env.staging.example](file:///c:/projects/tvk-tracker-v2/.env.staging.example).
+- **Production Instance**: Persists to `namma-arasu`. Guided by [.env.production.example](file:///c:/projects/tvk-tracker-v2/.env.production.example).
+
+To develop with a specific cloud instance, copy the respective template to your local untracked `.env.local` file:
+```bash
+# To target Staging database:
+cp .env.staging.example .env.local
+
+# To target Production database:
+cp .env.production.example .env.local
+```
+
+### Multi-Environment Firebase Deployment
+
+We maintain 100% data and hosting isolation. Switch active projects and deploy automatically to Firebase Hosting using the CLI scripts:
+
+```bash
+# Deploy to Staging environment:
+npm run deploy:staging
+
+# Deploy to Production environment:
+npm run deploy:production
 ```
 
 ---

@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "namma-arasu"
+    "production": "namma-arasu",
+    "staging": "namma-arasu-staging"
   }
 }
