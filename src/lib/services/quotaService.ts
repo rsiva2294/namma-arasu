@@ -63,7 +63,7 @@ export const quotaService = {
             // New day, reset count
             localRecord = { fingerprint, count: 0, lastResetDate: today };
           }
-        } catch (e) {
+        } catch {
           console.warn("Malformed quota record in localStorage. Resetting...");
         }
       }
@@ -142,7 +142,7 @@ export const quotaService = {
    * Retrieves the current remaining quota count without incrementing it.
    */
   getRemainingQuota(fingerprint: string): number {
-    if (typeof window === "undefined") return MAX_DAILY_LIMIT;
+    if (typeof window === "undefined" || !fingerprint) return MAX_DAILY_LIMIT;
     const today = getTodayDateString();
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (saved) {
@@ -151,7 +151,7 @@ export const quotaService = {
         if (parsed.lastResetDate === today) {
           return Math.max(0, MAX_DAILY_LIMIT - parsed.count);
         }
-      } catch (e) {
+      } catch {
         // ignore malformed
       }
     }

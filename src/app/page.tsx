@@ -115,6 +115,13 @@ export default function Dashboard() {
     return matchesSearch && matchesFramework && matchesStatus && matchesPriority && matchesSection;
   });
 
+  // Always sort TVK's Journey card as the first card in the list
+  const sortedPromises = [...filteredPromises].sort((a, b) => {
+    if (a.id === "p0-tvk-journey") return -1;
+    if (b.id === "p0-tvk-journey") return 1;
+    return 0;
+  });
+
   // Chart 1: Framework analysis (Total vs Completed)
   const getFrameworkChartData = () => {
     const frameworks: FrameworkType[] = ["Aram", "Porul", "Inbam"];
@@ -180,61 +187,7 @@ export default function Dashboard() {
     <div className="space-y-8 animate-fade-in">
 
 
-      {/* Featured Showcase Hero Card — Always visible at the top */}
-      <Link
-        href="/promises/p0-tvk-journey"
-        className="group block p-6 rounded-2xl border border-blue-500/20 bg-gradient-to-br from-blue-500/5 via-card to-purple-500/5 shadow-sm hover:shadow-md hover:border-blue-500/30 transition-all duration-300"
-      >
-        <div className="flex flex-col lg:flex-row lg:items-center gap-5">
-          {/* Left: Icon + Text */}
-          <div className="flex-1 space-y-3">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-md border bg-amber-500/10 text-amber-800 dark:text-amber-400 border-amber-500/20 uppercase tracking-wider">
-                <Award className="w-3 h-3" /> Showcase Example
-              </span>
-              <span className="inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-md border bg-teal-500/10 text-teal-800 dark:text-teal-400 border-teal-500/20 uppercase tracking-wider">
-                Completed · 100%
-              </span>
-            </div>
-            <h3 className="text-lg font-black text-foreground tracking-tight leading-snug group-hover:text-blue-500 transition-colors">
-              TVK&apos;s Journey: A Commitment to Lead the Nation
-            </h3>
-            <p className="text-xs text-muted-foreground leading-relaxed max-w-2xl">
-              A verified timeline tracing TVK&apos;s historic rise — from party launch in Feb 2024, the 15M-member grassroots drive, the Aram-Porul-Inbam manifesto unveiling in April 2026, through to winning 108 seats with 85.1% voter turnout.
-            </p>
-          </div>
 
-          {/* Right: Mini timeline */}
-          <div className="shrink-0 flex flex-col gap-2.5 lg:min-w-[280px]">
-            {[
-              { date: "Feb 2, 2024", label: "TVK officially launched" },
-              { date: "Jul 2025", label: "15M membership milestone" },
-              { date: "Apr 16, 2026", label: "Aram-Porul-Inbam manifesto unveiled" },
-              { date: "Apr 23, 2026", label: "Single-phase polling · 85.1% turnout" },
-              { date: "May 5, 2026", label: "108 seats won · CM-designate" }
-            ].map((item, i) => (
-              <div key={i} className="flex items-start gap-2.5">
-                <div className="mt-0.5 h-2 w-2 rounded-full bg-blue-500 shrink-0" />
-                <div className="flex items-baseline gap-2">
-                  <span className="text-[9px] font-bold text-muted-foreground whitespace-nowrap uppercase tracking-wide">{item.date}</span>
-                  <span className="text-[10px] text-foreground font-medium">{item.label}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Bottom CTA */}
-        <div className="mt-5 pt-4 border-t border-border flex items-center justify-between">
-          <div className="flex items-center gap-1.5 text-[10px] font-semibold text-amber-600 dark:text-amber-400">
-            <AlertTriangle className="w-3.5 h-3.5" />
-            <span className="uppercase tracking-wider">This is a pre-seeded example demonstrating NammaArasu&apos;s interactive features</span>
-          </div>
-          <span className="inline-flex items-center gap-1 text-xs font-bold text-blue-500 group-hover:gap-2 transition-all">
-            View Full Timeline <ArrowRight className="w-3.5 h-3.5" />
-          </span>
-        </div>
-      </Link>
 
       {/* Metrics Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
@@ -301,22 +254,26 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Collapsible Analytics Toggle on Mobile */}
+      {/* Collapsible Analytics Toggle on Desktop & Mobile */}
       <button 
         onClick={() => setShowAnalytics(!showAnalytics)} 
-        className="w-full md:hidden flex items-center justify-between p-4 rounded-xl border border-border bg-card hover:bg-muted/10 font-bold text-xs text-foreground uppercase tracking-wider transition-all cursor-pointer"
+        className="w-full flex items-center justify-between p-4 rounded-2xl border border-border bg-card hover:bg-muted/10 font-bold text-xs text-foreground uppercase tracking-wider transition-all cursor-pointer shadow-sm"
       >
         <span className="flex items-center gap-2">
           <TrendingUp className="w-4 h-4 text-blue-500" />
-          {showAnalytics ? "Hide Analytics & Charts" : "Show Analytics & Charts"}
+          {showAnalytics 
+            ? (lang === "en" ? "Hide Visual Analytics & Charts" : "வரைபடங்கள் மற்றும் பகுப்பாய்வுகளை மறை") 
+            : (lang === "en" ? "Show Visual Analytics & Charts" : "வரைபடங்கள் மற்றும் பகுப்பாய்வுகளைக் காட்டு")}
         </span>
         <span className="text-[9px] text-muted-foreground font-semibold px-2 py-0.5 bg-muted rounded">
-          {showAnalytics ? "COLLAPSE" : "EXPAND"}
+          {showAnalytics 
+            ? (lang === "en" ? "COLLAPSE" : "மறை") 
+            : (lang === "en" ? "EXPAND" : "விரிவாக்கு")}
         </span>
       </button>
 
       {/* Visualizations Grid */}
-      <div className={`${showAnalytics ? "grid" : "hidden md:grid"} grid-cols-1 lg:grid-cols-12 gap-6`}>
+      <div className={`${showAnalytics ? "grid" : "hidden"} grid-cols-1 lg:grid-cols-12 gap-6`}>
         {/* Chart 1: Frameworks bar */}
         <div className="p-5 rounded-2xl border border-border bg-card lg:col-span-7 flex flex-col gap-4 shadow-sm">
           <div className="flex items-center gap-2 pb-2 border-b border-border">
@@ -559,13 +516,13 @@ export default function Dashboard() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">
-            Manifesto Commitments ({filteredPromises.length})
+            Manifesto Commitments ({sortedPromises.length})
           </p>
         </div>
 
-        {filteredPromises.length > 0 ? (
+        {sortedPromises.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filteredPromises.map((promise) => {
+            {sortedPromises.map((promise) => {
               const budgetAmt = promise.budget_amount 
                 ? `₹${(promise.budget_amount / 10000000).toFixed(1)} Cr`
                 : "Awaiting Budget Allocation";
@@ -578,7 +535,11 @@ export default function Dashboard() {
                 <Link
                   key={promise.id}
                   href={`/promises/${promise.id}`}
-                  className="group flex flex-col justify-between p-5 rounded-2xl border border-border bg-card hover:bg-muted/10 shadow-sm transition-all duration-200 text-left"
+                  className={`group flex flex-col justify-between p-5 rounded-2xl border transition-all duration-200 text-left ${
+                    promise.id === "p0-tvk-journey"
+                      ? "border-blue-500/20 bg-gradient-to-br from-blue-500/5 via-card to-purple-500/5 shadow hover:shadow-md hover:border-blue-500/30"
+                      : "border-border bg-card hover:bg-muted/10 shadow-sm"
+                  }`}
                 >
                   <div className="space-y-3.5">
                     {/* Badges row */}
@@ -607,8 +568,8 @@ export default function Dashboard() {
                         })()}
 
                         {promise.id === "p0-tvk-journey" && (
-                          <span className="text-[9px] font-bold px-2 py-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 rounded-md uppercase tracking-wider animate-pulse">
-                            ⚠️ Example Card
+                          <span className="text-[9px] font-bold px-2 py-0.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-md uppercase tracking-wider animate-pulse">
+                            ⭐ SHOWCASE EXAMPLE
                           </span>
                         )}
                       </div>

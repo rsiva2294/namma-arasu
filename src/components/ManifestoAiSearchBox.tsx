@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Search, Sparkles, BookOpen, X, AlertCircle, Loader2 } from "lucide-react";
 import { getUserFingerprint, quotaService } from "@/lib/services/quotaService";
+import { useLanguage } from "@/lib/i18n";
+import Link from "next/link";
 import docs from "@/data/tvk_manifesto_documents.json";
 import dict from "@/data/multilingual_dictionary.json";
 
@@ -47,7 +49,70 @@ const TOKEN_WEIGHTS: Record<string, number> = {
   welfare: 1.0,
 };
 
+const searchTranslations = {
+  en: {
+    searchPlaceholder: "Ask anything about the TVK manifesto (e.g., NEET exam, sports, free electricity)...",
+    searchButton: "Search",
+    deepSearchButton: "Deep Search",
+    askAiButton: "Ask AI",
+    aiQuotaPrefix: "AI Search Assistant",
+    aiQuotaSuffix: "searches remaining today",
+    searchingTitle: "Searching frameworks and generating answer...",
+    retrievalNoticeTitle: "Retrieval Notice:",
+    aiSynthesisTitle: "AI Response & Summary",
+    verifiableSourcesTitle: "OFFICIAL SOURCES & REFERENCES",
+    localSearchNotice: "Running in Static Hosting: Deep Search & AI Assistant have defaulted to high-precision local search.",
+    matchesTitle: "Deep Search Results",
+    instantSuggestionsTitle: "Instant Suggestions",
+    noMatchesFound: "We couldn't find any direct matches. Try searching with different terms.",
+    matchRate: "Match Rate"
+  },
+  ta: {
+    searchPlaceholder: "தேர்தல் அறிக்கை பற்றி ஏதேனும் கேளுங்கள் (எ.கா. நீட் தேர்வு, விளையாட்டு, இலவச மின்சாரம்)...",
+    searchButton: "தேடு",
+    deepSearchButton: "விரிவான தேடல்",
+    askAiButton: "AI கேளுங்கள்",
+    aiQuotaPrefix: "AI தேடல் உதவியாளர்",
+    aiQuotaSuffix: "தேடல்கள் இன்று மீதமுள்ளன",
+    searchingTitle: "தேர்தல் அறிக்கையைத் தேடி பதிலைத் தயாரிக்கிறது...",
+    retrievalNoticeTitle: "தேடல் அறிவிப்பு:",
+    aiSynthesisTitle: "AI பதில் & சுருக்கம்",
+    verifiableSourcesTitle: "அதிகாரப்பூர்வ ஆதாரங்கள் & குறிப்புகள்",
+    localSearchNotice: "உள்ளூர் தேடல் முறையில் இயங்குகிறது: விரிவான தேடல் & AI உதவியாளர் உள்ளூர் துல்லியத் தேடலுக்கு மாற்றப்பட்டுள்ளது.",
+    matchesTitle: "பொருந்தும் வாக்குறுதிகள்",
+    instantSuggestionsTitle: "உடனடிப் பரிந்துரைகள்",
+    noMatchesFound: "பொருந்தும் திட்டங்கள் எதுவும் இல்லை. வேறு வார்த்தைகளில் தேட முயலவும்.",
+    matchRate: "பொருந்தும் விகிதம்"
+  }
+};
+
+const getLivePromiseId = (searchId: string): string => {
+  if (!searchId) return "";
+  if (!searchId.startsWith("p-")) return searchId;
+
+  // Format: p-{framework}-p{P}-s{S}-i{I}
+  // Target: {framework}-p{P}-s{S+1}-pr{I+1}
+  const parts = searchId.split("-");
+  if (parts.length < 5) return searchId;
+
+  const framework = parts[1]; // e.g. "aram"
+  const pillarPart = parts[2]; // e.g. "p1"
+
+  // Parse section index
+  const sectionMatch = parts[3].match(/s(\d+)/);
+  const sectionIdx = sectionMatch ? parseInt(sectionMatch[1], 10) : 0;
+
+  // Parse promise index
+  const promiseMatch = parts[4].match(/i(\d+)/);
+  const promiseIdx = promiseMatch ? parseInt(promiseMatch[1], 10) : 0;
+
+  return `${framework}-${pillarPart}-s${sectionIdx + 1}-pr${promiseIdx + 1}`;
+};
+
 export default function ManifestoAiSearchBox() {
+  const { lang } = useLanguage();
+  const st = searchTranslations[lang];
+
   const [query, setQuery] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const [tier1Results, setTier1Results] = useState<ClientDoc[]>([]);
@@ -318,8 +383,8 @@ export default function ManifestoAiSearchBox() {
   return (
     <div ref={containerRef} className="relative w-full max-w-4xl mx-auto z-40 my-6">
       {/* Search Input Container */}
-      <div className="relative flex items-center bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl shadow-md focus-within:ring-2 focus-within:ring-emerald-500/20 transition-all duration-200">
-        <div className="pl-4 text-slate-400 dark:text-zinc-500">
+      <div className="relative flex items-center bg-card border border-border rounded-2xl shadow-lg focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500/50 hover:border-border/80 transition-all duration-300">
+        <div className="pl-4 text-muted-foreground">
           <Search size={20} />
         </div>
         <input
@@ -330,8 +395,8 @@ export default function ManifestoAiSearchBox() {
             setIsFocused(true);
           }}
           onFocus={() => setIsFocused(true)}
-          placeholder="Search manifesto promises in English, Tamil, or Tanglish (e.g. neet, free electricity, thanneer)..."
-          className="w-full py-4 px-3 bg-transparent text-slate-800 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-600 focus:outline-none text-base font-medium"
+          placeholder={st.searchPlaceholder}
+          className="w-full py-4.5 px-3 bg-transparent text-foreground placeholder-muted-foreground focus:outline-none text-sm md:text-base font-semibold"
         />
         {query && (
           <button
@@ -342,88 +407,93 @@ export default function ManifestoAiSearchBox() {
               setAiAnswer(null);
               setError(null);
             }}
-            className="p-1 mr-2 text-slate-400 hover:text-slate-600 dark:hover:text-zinc-300 transition-colors"
+            className="p-1.5 mr-2 text-muted-foreground hover:text-foreground transition-colors"
           >
             <X size={18} />
           </button>
         )}
-        <div className="flex items-center gap-1.5 pr-3">
+        <div className="flex items-center gap-2 pr-3.5 shrink-0">
           <button
             onClick={executeSemanticSearch}
             disabled={!query}
-            className="flex items-center gap-1 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-900 dark:hover:bg-zinc-850 text-slate-700 dark:text-zinc-300 rounded-lg text-xs font-semibold border border-slate-200 dark:border-zinc-800 disabled:opacity-50 transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-muted hover:bg-muted/80 text-foreground rounded-xl text-xs font-bold border border-border disabled:opacity-50 transition-all active:scale-98 cursor-pointer shrink-0"
           >
-            Vector Search
+            {st.deepSearchButton}
           </button>
           <button
             onClick={executeAiSynthesis}
             disabled={!query}
-            className="flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-lg text-xs font-semibold shadow-sm hover:shadow transition-all disabled:opacity-50 cursor-pointer"
+            className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl text-xs font-extrabold shadow-sm active:scale-98 transition-all disabled:opacity-50 cursor-pointer shrink-0"
           >
-            <Sparkles size={13} />
-            Ask AI
+            <Sparkles size={13} className="text-white/90" />
+            {st.askAiButton}
           </button>
         </div>
       </div>
 
       {/* Local Storage Quota Info Indicator */}
-      <div className="mt-1.5 px-2 flex justify-between text-[11px] text-slate-400 dark:text-zinc-600 font-medium">
-        <span>Daily AI Synthesis Limit: 10 requests</span>
-        <span>Remaining AI Quota: {remainingQuota}/10</span>
+      <div className="mt-2 px-3 flex justify-between items-center text-xs text-muted-foreground font-semibold tracking-wide">
+        <div className="flex items-center gap-1.5">
+          <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
+          <span>{st.aiQuotaPrefix}</span>
+        </div>
+        <span className="font-mono text-foreground bg-muted px-2 py-0.5 rounded-lg border border-border text-[11px] font-black">
+          {remainingQuota} / 10 {lang === "en" ? "searches remaining today" : "தேடல்கள் இன்று மீதமுள்ளன"}
+        </span>
       </div>
 
       {/* Results Overlay Dropdown */}
       {isFocused && (query || loading || error || aiAnswer || semanticResults.length > 0) && (
         <div
           ref={resultsRef}
-          className="absolute left-0 right-0 mt-3 p-4 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl shadow-2xl z-50 max-h-[75vh] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200"
+          className="absolute left-0 right-0 mt-3 p-5 bg-card border border-border rounded-2xl shadow-2xl z-50 max-h-[75vh] overflow-y-auto scrollbar-thin"
         >
           {loading && (
-            <div className="flex flex-col items-center justify-center py-10 text-slate-500">
-              <Loader2 className="animate-spin text-emerald-600 mb-2" size={28} />
-              <span className="text-sm font-medium">Searching frameworks and generating answer...</span>
+            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground gap-3">
+              <Loader2 className="animate-spin text-blue-600" size={32} />
+              <span className="text-xs font-black tracking-wide animate-pulse">{st.searchingTitle}</span>
             </div>
           )}
 
           {error && (
-            <div className="flex items-start gap-2.5 p-3.5 bg-rose-50 dark:bg-rose-950/20 border border-rose-150 dark:border-rose-900/30 text-rose-800 dark:text-rose-400 rounded-lg mb-4 text-sm">
+            <div className="flex items-start gap-2.5 p-4 bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 rounded-xl mb-4 text-xs font-bold leading-relaxed">
               <AlertCircle size={18} className="shrink-0 mt-0.5" />
               <div>
-                <span className="font-bold">Retrieval Notice:</span> {error}
+                <span className="font-extrabold">{st.retrievalNoticeTitle}</span> {error}
               </div>
             </div>
           )}
 
           {/* AI ANSWER LAYER (TIER 3) */}
           {aiAnswer && activeTab === "ai" && !loading && (
-            <div className="p-4 bg-emerald-50/50 dark:bg-emerald-950/10 border border-emerald-100 dark:border-emerald-900/20 rounded-xl mb-6">
-              <div className="flex items-center gap-2 mb-2 text-emerald-800 dark:text-emerald-400 font-bold text-sm">
-                <Sparkles size={16} />
-                <span>AI Synthesis (Grounded Context)</span>
+            <div className="p-5 bg-blue-500/5 dark:bg-blue-500/5 border border-blue-500/15 rounded-2xl mb-6 space-y-4 animate-fade-in">
+              <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-extrabold text-sm uppercase tracking-wider">
+                <Sparkles size={16} className="text-indigo-500 animate-pulse" />
+                <span>{st.aiSynthesisTitle}</span>
               </div>
-              <p className="text-slate-800 dark:text-zinc-200 text-sm leading-relaxed whitespace-pre-wrap">
+              <p className="text-foreground text-sm font-medium leading-relaxed whitespace-pre-wrap">
                 {aiAnswer}
               </p>
 
               {/* Citations badges */}
               {citations.length > 0 && (
-                <div className="mt-4 pt-3 border-t border-slate-200/50 dark:border-zinc-800/50">
-                  <span className="text-xs font-bold text-slate-500 dark:text-zinc-500 block mb-2">
-                    VERIFIABLE CITATION SOURCES:
+                <div className="mt-4 pt-4 border-t border-border">
+                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest block mb-2.5">
+                    {st.verifiableSourcesTitle}
                   </span>
                   <div className="flex flex-wrap gap-2">
                     {citations.map((cite, index) => (
                       <button
                         key={index}
                         onClick={() => handleCitationClick(cite)}
-                        className={`flex items-center gap-1.5 px-2.5 py-1 text-xs border rounded-lg transition-all cursor-pointer font-medium ${
+                        className={`flex items-center gap-1.5 px-3 py-1.5 border rounded-xl transition-all duration-150 text-xs font-bold cursor-pointer ${
                           selectedCitationId === cite.promiseId
-                            ? "bg-emerald-600 text-white border-emerald-600 shadow-sm font-semiboldScale"
-                            : "bg-white hover:bg-slate-50 dark:bg-zinc-900 dark:hover:bg-zinc-850 text-slate-700 dark:text-zinc-300 border-slate-200 dark:border-zinc-800"
+                            ? "bg-blue-600 text-white border-blue-600 shadow-md scale-[1.02]"
+                            : "bg-muted hover:bg-muted/80 text-muted-foreground border-border"
                         }`}
                       >
-                        <BookOpen size={11} />
-                        <span>[{index + 1}] {cite.framework} • Section {cite.section.substring(0, 15)}...</span>
+                        <BookOpen size={12} />
+                        <span>[{index + 1}] {cite.framework} • {cite.section.substring(0, 15)}...</span>
                       </button>
                     ))}
                   </div>
@@ -434,62 +504,69 @@ export default function ManifestoAiSearchBox() {
 
           {/* DETERMINISTIC RETRIEVAL RESULTS (TIER 1 / TIER 2) */}
           {isStaticHostingFallback && !loading && (
-            <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-blue-50/50 dark:bg-blue-950/10 border border-blue-100 dark:border-blue-900/20 rounded-xl mb-4 text-[11px] text-blue-700 dark:text-blue-400 font-medium leading-relaxed">
-              <AlertCircle size={13} className="shrink-0 text-blue-500" />
-              <span>Running in Static Hosting: Vector Search & AI Synthesis require a server runtime and have gracefully defaulted to high-precision local search.</span>
+            <div className="flex items-center gap-2.5 p-4 bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 rounded-xl mb-4 text-xs font-semibold leading-relaxed">
+              <AlertCircle size={15} className="shrink-0 text-amber-500" />
+              <span>{st.localSearchNotice}</span>
             </div>
           )}
           {!loading && (
             <div>
-              <div className="flex items-center justify-between mb-3.5 pb-2 border-b border-slate-100 dark:border-zinc-900">
-                <span className="text-xs font-bold text-slate-400 dark:text-zinc-500 tracking-wider uppercase">
-                  {semanticResults.length > 0 ? "Semantic Vector Matches (Tier 2)" : "Keyword Suggesions (Tier 1)"}
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-border">
+                <span className="text-[10px] font-black text-muted-foreground tracking-widest uppercase">
+                  {semanticResults.length > 0 ? st.matchesTitle : st.instantSuggestionsTitle}
                 </span>
-                <span className="text-xs text-slate-400 dark:text-zinc-500">
-                  Matches found: {semanticResults.length > 0 ? semanticResults.length : tier1Results.length}
+                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-wider">
+                  {lang === "en" ? "Matches found" : "பொருந்தும் முடிவுகள்"}: {semanticResults.length > 0 ? semanticResults.length : tier1Results.length}
                 </span>
               </div>
 
               {semanticResults.length === 0 && tier1Results.length === 0 && !error && (
-                <div className="text-center py-8 text-slate-400 dark:text-zinc-600 text-sm">
-                  No instant matches found. Click <span className="font-semibold text-slate-600 dark:text-zinc-400">Vector Search</span> or <span className="font-semibold text-emerald-600">Ask AI</span> to perform deep retrieval.
+                <div className="text-center py-10 text-muted-foreground text-sm font-semibold">
+                  {st.noMatchesFound}
                 </div>
               )}
 
               <div className="flex flex-col gap-3">
                 {(semanticResults.length > 0 ? semanticResults : tier1Results).map((doc) => (
-                  <div
+                  <Link
+                    href={`/promises/${getLivePromiseId(doc.id)}`}
                     key={doc.id}
                     id={doc.id}
-                    className={`p-3.5 border rounded-xl transition-all ${
+                    className={`block p-4 border rounded-2xl transition-all duration-200 cursor-pointer hover:border-blue-500/30 hover:shadow-sm ${
                       highlightedPromiseId === doc.id
-                        ? "bg-slate-50 dark:bg-zinc-900 border-emerald-500 shadow-md ring-1 ring-emerald-500/20"
-                        : "bg-white hover:bg-slate-50 dark:bg-zinc-950 dark:hover:bg-zinc-900/40 border-slate-150 dark:border-zinc-850"
+                        ? "bg-blue-500/5 border-blue-500 shadow-md scale-[1.01]"
+                        : "bg-card hover:bg-muted/10 border-border"
                     }`}
                   >
-                    <div className="flex items-start justify-between gap-4 mb-2">
-                      <div className="flex flex-wrap gap-1.5">
-                        <span className="px-2 py-0.5 bg-slate-100 dark:bg-zinc-900 text-slate-600 dark:text-zinc-400 rounded text-[10px] font-bold uppercase border border-slate-200 dark:border-zinc-800">
+                    <div className="flex items-start justify-between gap-4 mb-3">
+                      <div className="flex flex-wrap gap-2">
+                        <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider border ${
+                          doc.framework === "Aram" 
+                            ? "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20"
+                            : doc.framework === "Porul"
+                            ? "bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 border-cyan-500/20"
+                            : "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/20"
+                        }`}>
                           {doc.framework}
                         </span>
-                        <span className="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 rounded text-[10px] font-bold border border-emerald-100/30 dark:border-emerald-900/10">
+                        <span className="px-2 py-0.5 bg-muted text-muted-foreground rounded text-[9px] font-black border border-border uppercase tracking-wider">
                           {doc.pillar_title}
                         </span>
                       </div>
                       {doc.hybridScore && (
-                        <span className="text-[10px] font-bold text-slate-400 dark:text-zinc-500">
-                          Match: {Math.round(doc.hybridScore * 100)}%
+                        <span className="text-[10px] font-black text-muted-foreground">
+                          {st.matchRate}: {Math.round(doc.hybridScore * 100)}%
                         </span>
                       )}
                     </div>
 
-                    <h4 className="text-slate-500 dark:text-zinc-500 text-xs font-bold mb-1.5 uppercase tracking-wide">
+                    <h4 className="text-muted-foreground text-[10px] font-black mb-2 uppercase tracking-widest">
                       {doc.section_name}
                     </h4>
-                    <p className="text-slate-800 dark:text-zinc-200 text-sm font-medium leading-relaxed">
+                    <p className="text-foreground text-sm font-semibold leading-relaxed">
                       {doc.promise}
                     </p>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>

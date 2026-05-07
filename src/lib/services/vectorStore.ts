@@ -25,7 +25,6 @@ export interface ServerVectorStore {
 
 // Global Memory Cache Singleton
 declare global {
-  // eslint-disable-next-line no-var
   var manifestoVectorStore: ServerVectorStore | undefined;
 }
 
