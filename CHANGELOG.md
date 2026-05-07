@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.1] - 2026-05-07
+
+### Added
+- **Collapsible Visual Analytics Panel**: Made the visual charts collapsible on both desktop and mobile, collapsed by default, ensuring the Faceted Manifesto Filters and Manifesto Commitments list are instantly visible upon page load.
+- **Relocated Showcase Card**: Relocated the pre-seeded "TVK's Journey" showcase card directly into the Manifesto Commitments grid list, sorting it to the top always, and styled it with a premium framework-matched blue-to-purple background gradient and an animated brand badge.
+- **Overhauled Search UI**: Overhauled the AI search box with 100% theme compliance (supporting both Light & Dark modes), fully bilingual English/Tamil translations, simplified citizen-friendly copy, and exact promise ID mapping to eliminate page errors.
+
+### Removed
+- **Repository Code Cleanup**: Deleted the unimported `InteractiveMap.tsx` component and duplicate root-level PDFs, reclaiming ~18 MB of storage space.
+
 ## [0.6.0] - 2026-05-07
 
 ### Added
