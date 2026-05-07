@@ -71,6 +71,14 @@ body {
   overflow-x: hidden;
 }
 
+/* Smooth global theme transitions to eliminate mode toggle jank */
+html, body, header, aside, main, section, article, nav, div, button, p, span, h1, h2, h3, h4, h5, h6, input, select, textarea {
+  transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 250ms cubic-bezier(0.4, 0, 0.2, 1),
+              color 250ms cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 /* Custom modern scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
