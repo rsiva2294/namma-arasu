@@ -537,7 +537,7 @@ export default function Dashboard() {
                   href={`/promises/${promise.id}`}
                   className={`group flex flex-col justify-between p-5 rounded-2xl border transition-all duration-200 text-left ${
                     promise.id === "p0-tvk-journey"
-                      ? "border-blue-500/20 bg-gradient-to-br from-blue-500/5 via-card to-purple-500/5 shadow hover:shadow-md hover:border-blue-500/30"
+                      ? "border-blue-500/20 bg-card shadow hover:shadow-md hover:border-blue-500/30"
                       : "border-border bg-card hover:bg-muted/10 shadow-sm"
                   }`}
                 >

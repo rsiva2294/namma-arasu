@@ -22,6 +22,12 @@
   --admin-bg: rgba(245, 158, 11, 0.2);
   --admin-text: #fbbf24;
   --admin-border: rgba(217, 119, 6, 0.4);
+
+  --glass-bg: rgba(17, 21, 29, 0.7);
+  --glass-card-bg: rgba(17, 21, 29, 0.8);
+  --glass-border: rgba(30, 41, 59, 0.5);
+  --glass-card-border: rgba(30, 41, 59, 0.6);
+  --glass-shadow: rgba(0, 0, 0, 0.2);
 }
 
 .light {
@@ -48,6 +54,12 @@
   --admin-bg: rgba(245, 158, 11, 0.12);
   --admin-text: #b45309;
   --admin-border: rgba(245, 158, 11, 0.25);
+
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-card-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(226, 232, 240, 0.8);
+  --glass-card-border: rgba(226, 232, 240, 0.9);
+  --glass-shadow: rgba(0, 0, 0, 0.03);
 }
 
 @theme inline {
@@ -71,12 +83,15 @@ body {
   overflow-x: hidden;
 }
 
-/* Smooth global theme transitions to eliminate mode toggle jank */
-html, body, header, aside, main, section, article, nav, div, button, p, span, h1, h2, h3, h4, h5, h6, input, select, textarea {
-  transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1),
-              border-color 250ms cubic-bezier(0.4, 0, 0.2, 1),
-              color 250ms cubic-bezier(0.4, 0, 0.2, 1),
-              box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1);
+/* Highly targeted, high-performance transitions for theme-relevant elements */
+body, header, aside, main, section, nav, .glass-panel, .glass-card, button, input, select, textarea,
+h1, h2, h3, h4, h5, h6, p, span, a, label, strong, b, i, em, svg, path, circle, rect, .border, .border-border, .border-input {
+  transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+              color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 150ms cubic-bezier(0.4, 0, 0.2, 1),
+              fill 150ms cubic-bezier(0.4, 0, 0.2, 1),
+              stroke 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Custom modern scrollbars */
@@ -98,17 +113,17 @@ html, body, header, aside, main, section, article, nav, div, button, p, span, h1
   background: #334155;
 }
 
-/* Design Utilities */
+/* Design Utilities with dynamic variables for jank-free theme transitions */
 .glass-panel {
-  background: rgba(17, 21, 29, 0.7);
+  background: var(--glass-bg);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(30, 41, 59, 0.5);
+  border: 1px solid var(--glass-border);
 }
 
 .glass-card {
-  background: rgba(17, 21, 29, 0.8);
-  border: 1px solid rgba(30, 41, 59, 0.6);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+  background: var(--glass-card-bg);
+  border: 1px solid var(--glass-card-border);
+  box-shadow: 0 4px 30px var(--glass-shadow);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
