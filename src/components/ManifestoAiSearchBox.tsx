@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Search, Sparkles, BookOpen, X, AlertCircle, Loader2 } from "lucide-react";
 import { getUserFingerprint, quotaService } from "@/lib/services/quotaService";
 import { useLanguage } from "@/lib/i18n";
+import { isFirebaseConfigured } from "@/lib/db";
 import Link from "next/link";
 import docs from "@/data/tvk_manifesto_documents.json";
 import dict from "@/data/multilingual_dictionary.json";
@@ -96,7 +97,19 @@ const getLivePromiseId = (searchId: string): string => {
   if (parts.length < 5) return searchId;
 
   const framework = parts[1]; // e.g. "aram"
-  const pillarPart = parts[2]; // e.g. "p1"
+  const pillarPart = parts[2]; // e.g. "p1" or "p9" or "p12"
+
+  const pillarMatch = pillarPart.match(/p(\d+)/);
+  const pillarIdx = pillarMatch ? parseInt(pillarMatch[1], 10) : 1;
+
+  let livePillarPart = pillarPart;
+  if (framework === "inbam") {
+    // Inbam pillars are p8 to p10 in vector JSON, but map to p1 to p3 in live routing
+    livePillarPart = `p${pillarIdx - 7}`;
+  } else if (framework === "porul") {
+    // Porul pillars are p11 to p15 in vector JSON, but map to p1 to p5 in live routing
+    livePillarPart = `p${pillarIdx - 10}`;
+  }
 
   // Parse section index
   const sectionMatch = parts[3].match(/s(\d+)/);
@@ -106,7 +119,7 @@ const getLivePromiseId = (searchId: string): string => {
   const promiseMatch = parts[4].match(/i(\d+)/);
   const promiseIdx = promiseMatch ? parseInt(promiseMatch[1], 10) : 0;
 
-  return `${framework}-${pillarPart}-s${sectionIdx + 1}-pr${promiseIdx + 1}`;
+  return `${framework}-${livePillarPart}-s${sectionIdx + 1}-pr${promiseIdx + 1}`;
 };
 
 export default function ManifestoAiSearchBox() {
@@ -133,14 +146,22 @@ export default function ManifestoAiSearchBox() {
   const containerRef = useRef<HTMLDivElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
-  // Load quota on mount
+  // Pre-authenticate user and load quota on mount
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const fingerprint = getUserFingerprint();
-      const timer = setTimeout(() => {
-        setRemainingQuota(quotaService.getRemainingQuota(fingerprint));
-      }, 0);
-      return () => clearTimeout(timer);
+      async function initAuthAndQuota() {
+        try {
+          const uid = await quotaService.ensureAnonymousUser();
+          if (uid) {
+            setRemainingQuota(quotaService.getRemainingQuota(uid));
+          }
+        } catch (err) {
+          console.warn("Auth pre-initialization failed:", err);
+          const fingerprint = getUserFingerprint();
+          setRemainingQuota(quotaService.getRemainingQuota(fingerprint));
+        }
+      }
+      initAuthAndQuota();
     }
   }, []);
 
@@ -313,24 +334,74 @@ export default function ManifestoAiSearchBox() {
     setCitations([]);
     setActiveTab("ai");
 
-    // Retrieve context documents: prioritize Tier 2 results, fallback to Tier 1
-    const contextDocs = semanticResults.length > 0 ? semanticResults : tier1Results;
+    let contextDocs = semanticResults.length > 0 ? semanticResults : tier1Results;
+
+    // AUTOMATIC BACKGROUND RETRIEVAL PIPELINE
+    // If no context documents are populated yet, silently execute a high-precision semantic search first!
+    if (contextDocs.length === 0) {
+      try {
+        const response = await fetch("/api/manifesto-search/semantic-match", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query }),
+        });
+
+        if (response.status === 404) {
+          setIsStaticHostingFallback(true);
+          const normalizedQuery = query.toLowerCase().trim();
+          const t1Matches = localDocs
+            .filter((doc) => {
+              return (
+                doc.promise.toLowerCase().includes(normalizedQuery) ||
+                doc.section_name.toLowerCase().includes(normalizedQuery) ||
+                doc.keywords.some((k) => k.toLowerCase() === normalizedQuery)
+              );
+            })
+            .slice(0, 5);
+          setSemanticResults(t1Matches);
+          contextDocs = t1Matches;
+        } else if (response.ok) {
+          const data = await response.json();
+          const matches = data.matches || [];
+          setSemanticResults(matches);
+          contextDocs = matches;
+        } else {
+          contextDocs = tier1Results;
+        }
+      } catch (e) {
+        console.warn("Background semantic matching failed, falling back to local tokens:", e);
+        contextDocs = tier1Results;
+      }
+    }
 
     if (contextDocs.length === 0) {
       setLoading(false);
-      setError("AI synthesis requires retrieved promise context. Perform a vector or local search first.");
+      setError("We couldn't find any direct or semantic matches in the manifesto for this query. Try different keywords.");
       return;
     }
 
     try {
-      const fingerprint = getUserFingerprint();
+      const uid = await quotaService.ensureAnonymousUser();
+
+      // If Firebase is not configured, check and increment quota locally on the client first
+      if (!isFirebaseConfigured) {
+        const localCheck = await quotaService.checkAndIncrementQuota(uid);
+        if (!localCheck.allowed) {
+          setRemainingQuota(0);
+          setError("You have exceeded your limit of 10 AI synthesis requests today. Try again tomorrow or use Tier 1/2 searches.");
+          setLoading(false);
+          return;
+        }
+        setRemainingQuota(localCheck.remaining);
+      }
+
       const response = await fetch("/api/manifesto-search/synthesize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           query,
           contextDocuments: contextDocs,
-          fingerprint,
+          fingerprint: uid,
         }),
       });
 
@@ -353,7 +424,10 @@ export default function ManifestoAiSearchBox() {
       const data = await response.json();
       setAiAnswer(data.answer);
       setCitations(data.citations || []);
-      setRemainingQuota(data.remainingQuota);
+      
+      if (isFirebaseConfigured) {
+        setRemainingQuota(data.remainingQuota);
+      }
 
       if (data.tokenUsage) {
         console.log("=========================================");

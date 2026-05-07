@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.3] - 2026-05-07
+
+### Added
+- **Single-Click AI Synthesis**: Upgraded the AI search box (`ManifestoAiSearchBox.tsx`) to silently and automatically execute high-precision semantic searches in the background if the user clicks "Ask AI" directly, completely removing the manual "Deep Search" requirement.
+- **Mathematically Aligned Search Mapping**: Fixed Inbam/Porul link generation in `getLivePromiseId` by introducing mathematical index offsets (`pillarIdx - 7` for Inbam, `pillarIdx - 10` for Porul). This perfectly aligns the continuous vector indexing (where Inbam starts at `p8` and Porul starts at `p11`) with the live app routing (which restarts at `p1` for each framework), ensuring that clicking any AI citation or search suggestion takes the user to the exact, correct promise page (e.g. mapping `p-inbam-p9-s1-i0` flawlessly to `/promises/inbam-p2-s2-pr1`).
+- **Redesigned Mobile App Bar**: Overhauled `Header.tsx` to force a sleek, cohesive, single horizontal row on mobile viewports. Added adaptive, responsive button labels and intelligent truncation for a clean and ultra-premium appearance.
+
+## [0.6.2] - 2026-05-07
+
+### Added
+- **Firebase Anonymous Authentication**: Integrated secure, background pre-authentication (`ensureAnonymousUser`) into the AI search synthesis trigger on mount, completely avoiding any user blocking or delay.
+- **Firewall-Proof HTTP Long-Polling**: Configured Firestore connection options in `db.ts` to enforce `experimentalForceLongPolling: true`, bypassing local socket/gRPC blockage on restricted networks and ensuring robust cloud logging.
+- **Firebase App Hosting Integration**: Added default web fallback credentials to `db.ts` to support seamless, zero-config SSR deployment out of the box with your new Firebase App Hosting backend.
+
 ## [0.6.1] - 2026-05-07
 
 ### Added

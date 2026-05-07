@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { 
-  getFirestore, 
+  initializeFirestore,
   collection, 
   getDocs, 
   getDoc, 
@@ -10,21 +10,24 @@ import {
   query, 
   where 
 } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 import { PromiseItem, UpdateItem, EvidenceItem, CommentItem, DistrictStats, PromiseStatus } from "@/types";
 import { INITIAL_MOCK_PROMISES, INITIAL_MOCK_UPDATES, INITIAL_MOCK_EVIDENCE, INITIAL_MOCK_COMMENTS, TAMIL_NADU_DISTRICTS } from "./mockData";
 
 // Firebase Configuration
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "",
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "",
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "",
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "",
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "",
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "",
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyBUlLIKfuRcsL09yjHGHkfpW-_CPbZKvmE",
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "namma-arasu.firebaseapp.com",
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "namma-arasu",
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "namma-arasu.firebasestorage.app",
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "361801806078",
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:361801806078:web:2510c8692fc3213177f5af",
 };
 
 export const isFirebaseConfigured = 
-  process.env.NEXT_PUBLIC_FORCE_LOCAL === "true"
+  process.env.NEXT_PUBLIC_FORCE_LOCAL === "true" || 
+  process.env.NEXT_PUBLIC_STATIC_EXPORT === "true" ||
+  process.env.NEXT_PHASE === "phase-production-build"
     ? false
     : !!(
         firebaseConfig.apiKey && 
@@ -39,7 +42,8 @@ const app = isFirebaseConfigured
   ? (getApps().length === 0 ? initializeApp(firebaseConfig) : getApp())
   : null;
 
-export const db = app ? getFirestore(app) : null;
+export const db = app ? initializeFirestore(app, { experimentalForceLongPolling: true }) : null;
+export const auth = app ? getAuth(app) : null;
 
 // ==========================================================
 // LOCAL STORAGE FALLBACK ENGINE

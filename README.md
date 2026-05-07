@@ -71,21 +71,14 @@ cp .env.staging.example .env.local
 cp .env.production.example .env.local
 ```
 
-### Multi-Site Firebase Hosting
+### Firebase App Hosting (Automated Dynamic SSR)
 
-Both sites are hosted under a single Firebase project `namma-arasu` using different hosting targets:
-1. **Production Site**: `namma-arasu.web.app` (configured as target `production`).
-2. **Staging Site**: `namma-arasu-staging.web.app` (configured as target `staging`).
+NammaArasu has transitioned to **Firebase App Hosting**, which supports full dynamic server-side rendering (SSR), API routes, and background jobs out of the box.
 
-To deploy automatically to the specific hosting target, run:
+* **Automated CI/CD**: Deployments are fully integrated with your GitHub repository. Any push to your target tracking branch (e.g., `main` or your active feature branch) will **automatically trigger a new build and deployment** inside your Firebase App Hosting dashboard.
+* **Backend Status**: Managed under the `namma-arasu` App Hosting backend, serving `namma-arasu--namma-arasu.asia-southeast1.hosted.app`.
 
-```bash
-# Deploy to Staging Site (runs in local sandbox):
-npm run deploy:staging
-
-# Deploy to Production Site (runs in cloud Firestore):
-npm run deploy:production
-```
+To trigger a live deployment to your App Hosting backend, simply commit and push your changes to your remote GitHub repository!
 
 ---
 

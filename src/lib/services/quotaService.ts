@@ -1,5 +1,6 @@
-import { db, isFirebaseConfigured } from "@/lib/db";
+import { db, auth, isFirebaseConfigured } from "@/lib/db";
 import { doc, getDoc, setDoc, updateDoc, increment } from "firebase/firestore";
+import { signInAnonymously, onAuthStateChanged } from "firebase/auth";
 
 interface QuotaRecord {
   fingerprint: string;
@@ -32,8 +33,38 @@ export function getUserFingerprint(): string {
   return fingerprint;
 }
 
+// Ensure anonymous sign-in and return the unique UID
+export async function ensureAnonymousUser(): Promise<string> {
+  const firebaseAuth = auth;
+  if (typeof window === "undefined" || !firebaseAuth) {
+    return getUserFingerprint();
+  }
+
+  if (firebaseAuth.currentUser) {
+    return firebaseAuth.currentUser.uid;
+  }
+
+  return new Promise<string>((resolve) => {
+    const unsubscribe = onAuthStateChanged(firebaseAuth, async (user) => {
+      unsubscribe();
+      if (user) {
+        resolve(user.uid);
+      } else {
+        try {
+          const cred = await signInAnonymously(firebaseAuth);
+          resolve(cred.user.uid);
+        } catch (err) {
+          console.warn("Firebase Anonymous Auth failed, falling back to local storage fingerprint:", err);
+          resolve(getUserFingerprint());
+        }
+      }
+    });
+  });
+}
+
 // Quota Service
 export const quotaService = {
+  ensureAnonymousUser,
   /**
    * Checks if the user is allowed to perform an AI synthesis request.
    * Runs client-side (uses local storage) and can optionally sync to Firestore.
