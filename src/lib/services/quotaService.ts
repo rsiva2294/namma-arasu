@@ -100,8 +100,8 @@ export const quotaService = {
       }
     }
 
-    // 2. Firestore Dynamic Synchronization (if configured)
-    if (isFirebaseConfigured && db) {
+    // 2. Firestore Dynamic Synchronization (if configured and running client-side with active auth)
+    if (isFirebaseConfigured && db && typeof window !== "undefined") {
       try {
         const quotaDocRef = doc(db, "quotas", fingerprint);
         const docSnap = await getDoc(quotaDocRef);

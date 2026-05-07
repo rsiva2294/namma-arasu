@@ -383,17 +383,18 @@ export default function ManifestoAiSearchBox() {
     try {
       const uid = await quotaService.ensureAnonymousUser();
 
-      // If Firebase is not configured, check and increment quota locally on the client first
-      if (!isFirebaseConfigured) {
-        const localCheck = await quotaService.checkAndIncrementQuota(uid);
-        if (!localCheck.allowed) {
-          setRemainingQuota(0);
-          setError("You have exceeded your limit of 10 AI synthesis requests today. Try again tomorrow or use Tier 1/2 searches.");
-          setLoading(false);
-          return;
-        }
-        setRemainingQuota(localCheck.remaining);
+      // Check and increment quota on the client-side prior to API call.
+      // This is crucial because client-side calls are fully authenticated anonymously under the Firebase SDK,
+      // which successfully satisfies Firestore security rules (allowing document creation/writes),
+      // whereas unauthenticated server-side API endpoints are blocked.
+      const quotaCheck = await quotaService.checkAndIncrementQuota(uid);
+      if (!quotaCheck.allowed) {
+        setRemainingQuota(0);
+        setError("You have exceeded your limit of 10 AI synthesis requests today. Try again tomorrow or use Tier 1/2 searches.");
+        setLoading(false);
+        return;
       }
+      setRemainingQuota(quotaCheck.remaining);
 
       const response = await fetch("/api/manifesto-search/synthesize", {
         method: "POST",
