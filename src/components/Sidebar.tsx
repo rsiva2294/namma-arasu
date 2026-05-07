@@ -34,6 +34,9 @@ export const Sidebar: React.FC = () => {
 
   useEffect(() => {
     setIsOpen(false);
+    if (pathname && !pathname.startsWith("/promises/")) {
+      sessionStorage.setItem("last_civic_path", pathname);
+    }
   }, [pathname]);
 
   const navItems = [

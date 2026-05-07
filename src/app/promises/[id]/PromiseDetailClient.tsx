@@ -90,28 +90,17 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
     loadAllData();
 
     if (typeof window !== "undefined") {
-      const referrer = document.referrer;
-      if (referrer && referrer.includes(window.location.host)) {
-        try {
-          const url = new URL(referrer);
-          const path = url.pathname;
-          setBackUrl(path);
-          
-          if (path === "/kanban") {
-            setBackLabel(lang === "en" ? "Back to Kanban Board" : "கான்பான் போர்டிற்குத் திரும்பு");
-          } else if (path === "/districts") {
-            setBackLabel(lang === "en" ? "Back to District Analytics" : "மாவட்ட பகுப்பாய்விற்குத் திரும்பு");
-          } else if (path === "/manifesto") {
-            setBackLabel(lang === "en" ? "Back to Manifesto Library" : "தேர்தல் அறிக்கை நூலகத்திற்குத் திரும்பு");
-          } else {
-            setBackLabel(t.backToDashboard);
-          }
-        } catch (_) {
-          setBackUrl("/");
-          setBackLabel(t.backToDashboard);
-        }
+      const storedPath = sessionStorage.getItem("last_civic_path");
+      const path = storedPath || "/";
+      setBackUrl(path);
+      
+      if (path === "/kanban") {
+        setBackLabel(lang === "en" ? "Back to Kanban Board" : "கான்பான் போர்டிற்குத் திரும்பு");
+      } else if (path === "/districts") {
+        setBackLabel(lang === "en" ? "Back to District Analytics" : "மாவட்ட பகுப்பாய்விற்குத் திரும்பு");
+      } else if (path === "/manifesto") {
+        setBackLabel(lang === "en" ? "Back to Manifesto Library" : "தேர்தல் அறிக்கை நூலகத்திற்குத் திரும்பு");
       } else {
-        setBackUrl("/");
         setBackLabel(t.backToDashboard);
       }
     }
