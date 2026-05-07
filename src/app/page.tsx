@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { promiseService } from "@/lib/db";
 import { PromiseItem, FrameworkType, PromiseStatus, PromisePriority } from "@/types";
@@ -90,37 +90,40 @@ export default function Dashboard() {
   const totalBudget = promises.reduce((sum, p) => sum + (p.budget_amount || 0), 0);
   const budgetInCrores = (totalBudget / 10000000).toFixed(1);
 
-  // Dynamic unique sections list
-  const uniqueSections = Array.from(
-    new Set(
-      promises
-        .filter((p) => selectedFramework === "All" || p.framework === selectedFramework)
-        .map((p) => p.section)
-        .filter(Boolean)
-    )
-  ).sort() as string[];
+  // Dynamic unique sections list (Memoized)
+  const uniqueSections = useMemo(() => {
+    return Array.from(
+      new Set(
+        promises
+          .filter((p) => selectedFramework === "All" || p.framework === selectedFramework)
+          .map((p) => p.section)
+          .filter(Boolean)
+      )
+    ).sort() as string[];
+  }, [promises, selectedFramework]);
 
-  // Filtered data
-  const filteredPromises = promises.filter((p) => {
-    const matchesSearch = 
-      p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
-    
-    const matchesFramework = selectedFramework === "All" || p.framework === selectedFramework;
-    const matchesStatus = selectedStatus === "All" || p.status === selectedStatus;
-    const matchesPriority = selectedPriority === "All" || p.priority === selectedPriority;
-    const matchesSection = selectedSection === "All" || p.section === selectedSection;
+  // Filtered and Sorted commitments (Memoized)
+  const sortedPromises = useMemo(() => {
+    const filtered = promises.filter((p) => {
+      const matchesSearch = 
+        p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
+      
+      const matchesFramework = selectedFramework === "All" || p.framework === selectedFramework;
+      const matchesStatus = selectedStatus === "All" || p.status === selectedStatus;
+      const matchesPriority = selectedPriority === "All" || p.priority === selectedPriority;
+      const matchesSection = selectedSection === "All" || p.section === selectedSection;
 
-    return matchesSearch && matchesFramework && matchesStatus && matchesPriority && matchesSection;
-  });
+      return matchesSearch && matchesFramework && matchesStatus && matchesPriority && matchesSection;
+    });
 
-  // Always sort TVK's Journey card as the first card in the list
-  const sortedPromises = [...filteredPromises].sort((a, b) => {
-    if (a.id === "p0-tvk-journey") return -1;
-    if (b.id === "p0-tvk-journey") return 1;
-    return 0;
-  });
+    return [...filtered].sort((a, b) => {
+      if (a.id === "p0-tvk-journey") return -1;
+      if (b.id === "p0-tvk-journey") return 1;
+      return 0;
+    });
+  }, [promises, searchQuery, selectedFramework, selectedStatus, selectedPriority, selectedSection]);
 
   // Chart 1: Framework analysis (Total vs Completed)
   const getFrameworkChartData = () => {

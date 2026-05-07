@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, use } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { promiseService } from "@/lib/db";
 import { PromiseItem, UpdateItem, EvidenceItem, CommentItem, PromiseStatus } from "@/types";
 import StatusBadge from "@/components/StatusBadge";
@@ -665,13 +666,14 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
                     {/* Media representation */}
                     {ev.type === "image" && (
                       <div className="h-32 w-full rounded-lg overflow-hidden bg-muted relative border border-border">
-                        <img 
+                        <Image 
                           src={ev.file_url} 
                           alt="Citizen Proof" 
-                          className="object-cover h-full w-full opacity-80" 
-                          onError={(e) => {
-                            (e.target as HTMLElement).style.display = "none";
-                          }}
+                          fill
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          className="object-cover opacity-80" 
+                          loading="lazy"
+                          unoptimized={true}
                         />
                         <div className="absolute inset-0 flex items-center justify-center bg-slate-900/40">
                           <CheckCircle2 className="w-6 h-6 text-emerald-400" />
