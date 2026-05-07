@@ -41,6 +41,8 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
   const [comments, setComments] = useState<CommentItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [role, setRole] = useState<"Citizen" | "Admin">("Citizen");
+  const [backUrl, setBackUrl] = useState<string>("/");
+  const [backLabel, setBackLabel] = useState<string>("");
 
   // Input states
   const [newUpdateTitle, setNewUpdateTitle] = useState<string>("");
@@ -87,6 +89,33 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
   useEffect(() => {
     loadAllData();
 
+    if (typeof window !== "undefined") {
+      const referrer = document.referrer;
+      if (referrer && referrer.includes(window.location.host)) {
+        try {
+          const url = new URL(referrer);
+          const path = url.pathname;
+          setBackUrl(path);
+          
+          if (path === "/kanban") {
+            setBackLabel(lang === "en" ? "Back to Kanban Board" : "கான்பான் போர்டிற்குத் திரும்பு");
+          } else if (path === "/districts") {
+            setBackLabel(lang === "en" ? "Back to District Analytics" : "மாவட்ட பகுப்பாய்விற்குத் திரும்பு");
+          } else if (path === "/manifesto") {
+            setBackLabel(lang === "en" ? "Back to Manifesto Library" : "தேர்தல் அறிக்கை நூலகத்திற்குத் திரும்பு");
+          } else {
+            setBackLabel(t.backToDashboard);
+          }
+        } catch (_) {
+          setBackUrl("/");
+          setBackLabel(t.backToDashboard);
+        }
+      } else {
+        setBackUrl("/");
+        setBackLabel(t.backToDashboard);
+      }
+    }
+
     // Listen to role toggling from header
     const handleRoleChange = () => {
       const savedRole = localStorage.getItem("namma_arasu_role") as "Citizen" | "Admin";
@@ -94,7 +123,7 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
     };
     window.addEventListener("namma_arasu_role_change", handleRoleChange);
     return () => window.removeEventListener("namma_arasu_role_change", handleRoleChange);
-  }, [id]);
+  }, [id, lang, t]);
 
   // Submit the verified status transition
   const handleTransitionSubmit = async (e: React.FormEvent) => {
@@ -270,9 +299,9 @@ export default function PromiseDetailPageClient({ params }: PageProps) {
     <div className="space-y-8 animate-fade-in pb-12">
       {/* Back button */}
       <div>
-        <Link href="/" className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors">
+        <Link href={backUrl} className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors">
           <ChevronLeft className="w-4 h-4" />
-          <span>{t.backToDashboard}</span>
+          <span>{backLabel || t.backToDashboard}</span>
         </Link>
       </div>
 
